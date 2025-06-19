@@ -973,7 +973,7 @@ dependencies = [
  "bitflags 2.9.0",
  "cexpr",
  "clang-sys",
- "itertools 0.10.5",
+ "itertools 0.13.0",
  "log",
  "prettyplease 0.2.32",
  "proc-macro2",
@@ -1457,12 +1457,6 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4c78c047431fee22c1a7bb92e00ad095a02a983affe4d8a72e2a2c62c1b94f3"
-
-[[package]]
-name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
@@ -1596,16 +1590,6 @@ checksum = "43da5946c66ffcc7745f48db692ffbb10a83bfe0afd96235c5c2a4fb23994929"
 
 [[package]]
 name = "crypto-bigint"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03c6a1d5fa1de37e071642dfa44ec552ca5b299adb128fab16138e24b548fd21"
-dependencies = [
- "generic-array 0.14.7",
- "subtle",
-]
-
-[[package]]
-name = "crypto-bigint"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0dc92fb57ca44df6db8059111ab3af99a63d5d0f8375d9972e319a379c6bab76"
@@ -1659,7 +1643,7 @@ dependencies = [
  "rustc_version 0.4.1",
  "subtle",
  "zeroize",
- "zkm-lib 1.0.0 (git+https://github.com/zkMIPS/zkMIPS)",
+ "zkm-lib 1.1.0 (git+https://github.com/zkMIPS/zkMIPS.git)",
 ]
 
 [[package]]
@@ -1822,23 +1806,12 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
 name = "der"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6919815d73839e7ad218de758883aae3a257ba6759ce7a9992501efbb53d705c"
-dependencies = [
- "const-oid 0.7.1",
- "crypto-bigint 0.3.2",
- "pem-rfc7468 0.3.1",
-]
-
-[[package]]
-name = "der"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7c1832837b905bbfb5101e07cc24c8deddf52f93225eee6ead5f4d63d53ddcb"
 dependencies = [
- "const-oid 0.9.6",
- "pem-rfc7468 0.7.0",
+ "const-oid",
+ "pem-rfc7468",
  "zeroize",
 ]
 
@@ -1944,7 +1917,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
 dependencies = [
  "block-buffer 0.10.4",
- "const-oid 0.9.6",
+ "const-oid",
  "crypto-common",
  "subtle",
 ]
@@ -2019,13 +1992,13 @@ name = "ecdsa"
 version = "0.16.9"
 source = "git+https://github.com/zkMIPS-patches/signatures?branch=patch-ecdsa-0.16.9#fed1f3bbd4207450cebcc6d601c226f2cccccb3b"
 dependencies = [
- "der 0.7.10",
+ "der",
  "digest 0.10.7",
  "elliptic-curve",
  "rfc6979",
  "serdect",
  "signature",
- "spki 0.7.3",
+ "spki",
 ]
 
 [[package]]
@@ -2034,7 +2007,7 @@ version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
 dependencies = [
- "pkcs8 0.10.2",
+ "pkcs8",
  "signature",
 ]
 
@@ -2079,8 +2052,8 @@ dependencies = [
  "generic-array 0.14.7",
  "group 0.13.0",
  "hkdf",
- "pem-rfc7468 0.7.0",
- "pkcs8 0.10.2",
+ "pem-rfc7468",
+ "pkcs8",
  "rand_core 0.6.4",
  "sec1",
  "serdect",
@@ -3841,7 +3814,7 @@ dependencies = [
  "serdect",
  "sha2 0.10.8",
  "signature",
- "zkm-lib 1.0.0 (git+https://github.com/zkMIPS/zkMIPS)",
+ "zkm-lib 1.1.0 (git+https://github.com/zkMIPS/zkMIPS.git)",
 ]
 
 [[package]]
@@ -4468,7 +4441,7 @@ dependencies = [
  "hex",
  "primeorder",
  "sha2 0.10.8",
- "zkm-lib 1.0.0 (git+https://github.com/zkMIPS/zkMIPS)",
+ "zkm-lib 1.1.0 (git+https://github.com/zkMIPS/zkMIPS.git)",
 ]
 
 [[package]]
@@ -4941,15 +4914,6 @@ dependencies = [
 
 [[package]]
 name = "pem-rfc7468"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01de5d978f34aa4b2296576379fcc416034702fd94117c56ffd8a1a767cefb30"
-dependencies = [
- "base64ct",
-]
-
-[[package]]
-name = "pem-rfc7468"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "88b39c9bfcfc231068454382784bb460aae594343fb030d46e9f50a645418412"
@@ -5070,35 +5034,13 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pkcs1"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a78f66c04ccc83dd4486fd46c33896f4e17b24a7a3a6400dedc48ed0ddd72320"
-dependencies = [
- "der 0.5.1",
- "pkcs8 0.8.0",
- "zeroize",
-]
-
-[[package]]
-name = "pkcs1"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8ffb9f10fa047879315e6625af03c164b16962a5368d724ed16323b68ace47f"
 dependencies = [
- "der 0.7.10",
- "pkcs8 0.10.2",
- "spki 0.7.3",
-]
-
-[[package]]
-name = "pkcs8"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cabda3fb821068a9a4fab19a683eac3af12edf0f34b94a8be53c4972b8149d0"
-dependencies = [
- "der 0.5.1",
- "spki 0.5.4",
- "zeroize",
+ "der",
+ "pkcs8",
+ "spki",
 ]
 
 [[package]]
@@ -5107,8 +5049,8 @@ version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f950b2377845cebe5cf8b5165cb3cc1a5e0fa5cfa3e1f7f55707d8fd82e0a7b7"
 dependencies = [
- "der 0.7.10",
- "spki 0.7.3",
+ "der",
+ "spki",
 ]
 
 [[package]]
@@ -5811,45 +5753,25 @@ dependencies = [
 
 [[package]]
 name = "rsa"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cf22754c49613d2b3b119f0e5d46e34a2c628a937e3024b8762de4e7d8c710b"
-dependencies = [
- "byteorder",
- "digest 0.10.7",
- "num-bigint-dig",
- "num-integer",
- "num-iter",
- "num-traits",
- "pkcs1 0.3.3",
- "pkcs8 0.8.0",
- "rand_core 0.6.4",
- "smallvec",
- "subtle",
- "zeroize",
-]
-
-[[package]]
-name = "rsa"
 version = "0.9.6"
-source = "git+https://github.com/zkMIPS-patches/RustCrypto-RSA.git?branch=patch-rsa-0.9.6#ddbfba5a2a0789384d34a4820644c28b4531ef21"
 dependencies = [
  "bytemuck",
  "cfg-if",
- "const-oid 0.9.6",
+ "const-oid",
  "crypto-bigint 0.5.5",
  "digest 0.10.7",
  "num-bigint-dig",
  "num-integer",
  "num-traits",
- "pkcs1 0.7.5",
- "pkcs8 0.10.2",
+ "pkcs1",
+ "pkcs8",
  "rand_core 0.6.4",
  "signature",
- "spki 0.7.3",
+ "spki",
  "subtle",
+ "tracing",
  "zeroize",
- "zkm-lib 1.0.0 (git+https://github.com/zkMIPS/zkMIPS)",
+ "zkm-lib 1.1.0 (git+https://github.com/zkMIPS/zkMIPS.git)",
 ]
 
 [[package]]
@@ -5865,7 +5787,8 @@ dependencies = [
 name = "rsa-host"
 version = "1.1.0"
 dependencies = [
- "rsa 0.6.1",
+ "rsa 0.9.6",
+ "sha2 0.10.8",
  "zkm-build",
  "zkm-sdk",
 ]
@@ -6151,9 +6074,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3e97a565f76233a6003f9f5c54be1d9c5bdfa3eccfb189469f11ec4901c47dc"
 dependencies = [
  "base16ct",
- "der 0.7.10",
+ "der",
  "generic-array 0.14.7",
- "pkcs8 0.10.2",
+ "pkcs8",
  "serdect",
  "subtle",
  "zeroize",
@@ -6566,22 +6489,12 @@ checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 
 [[package]]
 name = "spki"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44d01ac02a6ccf3e07db148d2be087da624fea0221a16152ed01f0496a6b0a27"
-dependencies = [
- "base64ct",
- "der 0.5.1",
-]
-
-[[package]]
-name = "spki"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d91ed6c858b01f942cd56b37a94b3e0a1798290327d1236e4d9cf4eaca44d29d"
 dependencies = [
  "base64ct",
- "der 0.7.10",
+ "der",
 ]
 
 [[package]]
@@ -6702,7 +6615,7 @@ dependencies = [
  "num-bigint 0.4.6",
  "rand 0.8.5",
  "rustc-hex",
- "zkm-lib 1.0.0 (git+https://github.com/zkMIPS/zkMIPS)",
+ "zkm-lib 1.1.0 (git+https://github.com/zkMIPS/zkMIPS.git)",
 ]
 
 [[package]]
@@ -6962,13 +6875,6 @@ dependencies = [
  "dirs-next",
  "rustversion",
  "winapi",
-]
-
-[[package]]
-name = "test-artifacts"
-version = "1.0.0"
-dependencies = [
- "zkm-build",
 ]
 
 [[package]]
@@ -7535,7 +7441,7 @@ dependencies = [
  "crypto-bigint 0.6.1",
  "hex",
  "k256",
- "zkm-lib 1.0.0",
+ "zkm-lib 1.1.0",
  "zkm-zkvm",
 ]
 
@@ -8475,7 +8381,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-build"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -8486,7 +8392,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-core-executor"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -8512,7 +8418,6 @@ dependencies = [
  "sha2 0.10.8",
  "strum",
  "strum_macros",
- "test-artifacts",
  "thiserror 1.0.69",
  "tiny-keccak",
  "tracing",
@@ -8520,13 +8425,13 @@ dependencies = [
  "typenum",
  "vec_map",
  "zkm-curves",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-stark",
 ]
 
 [[package]]
 name = "zkm-core-machine"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "bincode",
  "cfg-if",
@@ -8571,13 +8476,13 @@ dependencies = [
  "zkm-core-executor",
  "zkm-curves",
  "zkm-derive",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-stark",
 ]
 
 [[package]]
 name = "zkm-curves"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "cfg-if",
  "curve25519-dalek",
@@ -8592,13 +8497,13 @@ dependencies = [
  "serde",
  "snowbridge-amcl",
  "typenum",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-stark",
 ]
 
 [[package]]
 name = "zkm-derive"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -8606,32 +8511,32 @@ dependencies = [
 
 [[package]]
 name = "zkm-lib"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "bincode",
  "cfg-if",
  "elliptic-curve",
  "serde",
  "sha2 0.10.8",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
 ]
 
 [[package]]
 name = "zkm-lib"
-version = "1.0.0"
-source = "git+https://github.com/zkMIPS/zkMIPS#9941c55a03607e4075dbd37f4cb22348811a7014"
+version = "1.1.0"
+source = "git+https://github.com/zkMIPS/zkMIPS.git#0eef8b98dc2700199d8c09499769cded1b95567b"
 dependencies = [
  "bincode",
  "cfg-if",
  "elliptic-curve",
  "serde",
  "sha2 0.10.8",
- "zkm-primitives 1.0.0 (git+https://github.com/zkMIPS/zkMIPS)",
+ "zkm-primitives 1.1.0 (git+https://github.com/zkMIPS/zkMIPS.git)",
 ]
 
 [[package]]
 name = "zkm-primitives"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "bincode",
  "hex",
@@ -8648,8 +8553,8 @@ dependencies = [
 
 [[package]]
 name = "zkm-primitives"
-version = "1.0.0"
-source = "git+https://github.com/zkMIPS/zkMIPS#9941c55a03607e4075dbd37f4cb22348811a7014"
+version = "1.1.0"
+source = "git+https://github.com/zkMIPS/zkMIPS.git#0eef8b98dc2700199d8c09499769cded1b95567b"
 dependencies = [
  "bincode",
  "hex",
@@ -8666,7 +8571,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-prover"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -8694,7 +8599,7 @@ dependencies = [
  "tracing-subscriber",
  "zkm-core-executor",
  "zkm-core-machine",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-recursion-circuit",
  "zkm-recursion-compiler",
  "zkm-recursion-core",
@@ -8704,7 +8609,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-recursion-circuit"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "hashbrown 0.14.5",
  "itertools 0.13.0",
@@ -8727,7 +8632,7 @@ dependencies = [
  "zkm-core-executor",
  "zkm-core-machine",
  "zkm-derive",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-recursion-compiler",
  "zkm-recursion-core",
  "zkm-recursion-gnark-ffi",
@@ -8736,7 +8641,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-recursion-compiler"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "backtrace",
  "itertools 0.13.0",
@@ -8748,7 +8653,7 @@ dependencies = [
  "tracing",
  "vec_map",
  "zkm-core-machine",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-recursion-core",
  "zkm-recursion-derive",
  "zkm-stark",
@@ -8756,7 +8661,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-recursion-core"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "backtrace",
  "ff 0.13.1",
@@ -8785,13 +8690,13 @@ dependencies = [
  "zkhash",
  "zkm-core-machine",
  "zkm-derive",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-stark",
 ]
 
 [[package]]
 name = "zkm-recursion-derive"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -8799,7 +8704,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-recursion-gnark-ffi"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -8823,7 +8728,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-sdk"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "alloy-signer",
  "alloy-signer-local",
@@ -8862,14 +8767,14 @@ dependencies = [
  "zkm-build",
  "zkm-core-executor",
  "zkm-core-machine",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-prover",
  "zkm-stark",
 ]
 
 [[package]]
 name = "zkm-stark"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "arrayref",
  "hashbrown 0.14.5",
@@ -8904,13 +8809,13 @@ dependencies = [
  "tracing-forest",
  "tracing-subscriber",
  "zkm-derive",
- "zkm-primitives 1.0.0",
+ "zkm-primitives 1.1.0",
  "zkm-zkvm",
 ]
 
 [[package]]
 name = "zkm-verifier"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "hex",
@@ -8922,7 +8827,7 @@ dependencies = [
 
 [[package]]
 name = "zkm-zkvm"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "bincode",
  "cfg-if",
@@ -8934,8 +8839,8 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "sha2 0.10.8",
- "zkm-lib 1.0.0",
- "zkm-primitives 1.0.0",
+ "zkm-lib 1.1.0",
+ "zkm-primitives 1.1.0",
 ]
 
 [[package]]

@@ -5,8 +5,9 @@ edition = { workspace = true }
 publish = false
 
 [dependencies]
-rsa = "0.6"
+#rsa = "0.6"
+rsa = {path = "../../../../RustCrypto-RSA"}
 zkm-sdk = { workspace = true }
-
+sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
 [build-dependencies]
 zkm-build = { workspace = true }
