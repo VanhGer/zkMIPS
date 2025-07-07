@@ -12,6 +12,7 @@ alloy-primitives = { version = "0.8.21", default-features = false, features = [
     "rlp",
 ] }
 log = "0.4.22"
+dotenv = "0.15.0"
 
 [build-dependencies]
 zkm-build = { workspace = true }

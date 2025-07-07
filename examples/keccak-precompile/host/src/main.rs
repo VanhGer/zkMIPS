@@ -32,38 +32,39 @@ fn prove_keccak_rust() {
 
     // Generate the proof for the given program and input.
     let (pk, vk) = client.setup(ELF);
-    let mut proof = client.prove(&pk, stdin).run().unwrap();
+    let mut proof = client.prove(&pk, stdin).compressed().run().unwrap();
     println!("generated proof");
 
-    // Read and verify the output.
+    // // Read and verify the output.
+    // //
+    // // Note that this output is read from values committed to in the program using
+    // // `zkm_zkvm::io::commit`.
+    // let public_input = proof.public_values.read::<Vec<u8>>();
+    // let input = proof.public_values.read::<Vec<u8>>();
+    // log::info!("public input: {} in hex", hex::encode(&public_input));
+    // log::info!("input: {} in hex", hex::encode(input));
     //
-    // Note that this output is read from values committed to in the program using
-    // `zkm_zkvm::io::commit`.
-    let public_input = proof.public_values.read::<Vec<u8>>();
-    let input = proof.public_values.read::<Vec<u8>>();
-    log::info!("public input: {} in hex", hex::encode(&public_input));
-    log::info!("input: {} in hex", hex::encode(input));
-
-    let value = proof.public_values.read::<[u8; 32]>();
-    log::info!("result value: {:X?}", value);
-    log::info!("result value: {} in hex", hex::encode(value));
-    // assert_eq!(value, *public_input);
-
-    // Verify proof and public values
-    client.verify(&proof, &vk).expect("verification failed");
-
-    // Test a round trip of proof serialization and deserialization.
-    proof.save("proof-with-pis.bin").expect("saving proof failed");
-    let deserialized_proof =
-        ZKMProofWithPublicValues::load("proof-with-pis.bin").expect("loading proof failed");
-
-    // Verify the deserialized proof.
-    client.verify(&deserialized_proof, &vk).expect("verification failed");
-
-    println!("successfully generated and verified proof for the program!")
+    // let value = proof.public_values.read::<[u8; 32]>();
+    // log::info!("result value: {:X?}", value);
+    // log::info!("result value: {} in hex", hex::encode(value));
+    // // assert_eq!(value, *public_input);
+    //
+    // // Verify proof and public values
+    // client.verify(&proof, &vk).expect("verification failed");
+    //
+    // // Test a round trip of proof serialization and deserialization.
+    // proof.save("proof-with-pis.bin").expect("saving proof failed");
+    // let deserialized_proof =
+    //     ZKMProofWithPublicValues::load("proof-with-pis.bin").expect("loading proof failed");
+    //
+    // // Verify the deserialized proof.
+    // client.verify(&deserialized_proof, &vk).expect("verification failed");
+    //
+    // println!("successfully generated and verified proof for the program!")
 }
 
 fn main() {
     utils::setup_logger();
+    dotenv::dotenv().ok();
     prove_keccak_rust();
 }

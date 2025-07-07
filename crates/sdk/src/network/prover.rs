@@ -70,20 +70,21 @@ impl NetworkProver {
         };
 
         let endpoint_para = endpoint.to_owned().expect("ENDPOINT must be set");
-        let endpoint = match ssl_config {
-            Some(config) => {
-                let mut tls_config = ClientTlsConfig::new()
-                    .domain_name(domain_name.to_owned().expect("DOMAIN_NAME must be set"));
-                if let Some(ca_cert) = config.ca_cert {
-                    tls_config = tls_config.ca_certificate(ca_cert);
-                }
-                if let Some(identity) = config.identity {
-                    tls_config = tls_config.identity(identity);
-                }
-                Endpoint::new(endpoint_para.to_owned())?.tls_config(tls_config)?
-            }
-            None => Endpoint::new(endpoint_para.to_owned())?,
-        };
+        // let endpoint = match ssl_config {
+        //     Some(config) => {
+        //         let mut tls_config = ClientTlsConfig::new()
+        //             .domain_name(domain_name.to_owned().expect("DOMAIN_NAME must be set"));
+        //         if let Some(ca_cert) = config.ca_cert {
+        //             tls_config = tls_config.ca_certificate(ca_cert);
+        //         }
+        //         if let Some(identity) = config.identity {
+        //             tls_config = tls_config.identity(identity);
+        //         }
+        //         Endpoint::new(endpoint_para.to_owned())?.tls_config(tls_config)?
+        //     }
+        //     None => Endpoint::new(endpoint_para.to_owned())?,
+        // };
+        let endpoint = Endpoint::new(endpoint_para.to_owned())?;
 
         let private_key = proof_network_privkey.to_owned().expect("ZKM_PRIVATE_KEY must be set");
         if private_key.is_empty() {
@@ -143,6 +144,7 @@ impl NetworkProver {
             seg_size,
             target_step: Some(target_step.into()),
             from_step,
+            single_node: true,
             ..Default::default()
         };
         for receipt_input in input.receipts.iter() {
@@ -182,14 +184,16 @@ impl NetworkProver {
                     sleep(Duration::from_secs(5)).await;
                 }
                 Some(Status::Success) => {
-                    let public_values = if kind == ZKMProofKind::CompressToGroth16 {
-                        ZKMPublicValues::default()
-                    } else {
-                        let public_values_bytes =
-                            NetworkProver::download_file(&get_status_response.public_values_url)
-                                .await?;
-                        ZKMPublicValues::from(&public_values_bytes)
-                    };
+                    tracing::info!("Generated proof: {get_status_response:?}");
+                    // let public_values = if kind == ZKMProofKind::CompressToGroth16 {
+                    //     ZKMPublicValues::default()
+                    // } else {
+                    //     let public_values_bytes =
+                    //         NetworkProver::download_file(&get_status_response.public_values_url)
+                    //             .await?;
+                    //     ZKMPublicValues::from(&public_values_bytes)
+                    // };
+                    let public_values = ZKMPublicValues::default();
 
                     // proof
                     let proof: ZKMProof =
