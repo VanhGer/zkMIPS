@@ -144,7 +144,8 @@ impl NetworkProver {
             seg_size,
             target_step: Some(target_step.into()),
             from_step,
-            single_node: true,
+            single_node: false,
+            max_prover_num: 0,
             ..Default::default()
         };
         for receipt_input in input.receipts.iter() {
