@@ -61,6 +61,13 @@ impl ProofSystem {
         }
     }
 }
+fn dumpGroth16WitnessFromFile() -> unsafe extern "C" fn(*mut c_char, *mut c_char) {
+    bind::DumpGroth16Witness
+}
+
+fn dumpGroth16CircuitFromFile() -> unsafe extern "C" fn(*mut c_char, *mut c_char) {
+    bind::DumpGroth16Circuit
+}
 
 enum ProveFunction {
     Plonk(unsafe extern "C" fn(*mut c_char, *mut c_char) -> *mut C_PlonkBn254Proof),
@@ -236,6 +243,8 @@ impl PlonkBn254Proof {
     }
 }
 
+
+
 impl Groth16Bn254Proof {
     unsafe fn from_raw(c_proof: *mut C_Groth16Bn254Proof) -> Self {
         let proof = Groth16Bn254Proof {
@@ -254,6 +263,7 @@ impl Groth16Bn254Proof {
 
 #[cfg(test)]
 mod tests {
+    use std::ffi::c_char;
     use p3_field::FieldAlgebra;
     use p3_koala_bear::KoalaBear;
     use p3_symmetric::Permutation;
@@ -267,4 +277,35 @@ mod tests {
         println!("{result:?}");
         super::test_koalabear_poseidon2();
     }
+
+    #[test]
+    // Dump groth16 witness from JSON to dv-pari compatible format
+    pub fn test_dump_groth16_witness() {
+        let witness_path = "./assets/groth16_witness.json";
+        let out_witness_path = "./assets/dump_groth16_witness.bin";
+        unsafe {
+            let witness_path_c = std::ffi::CString::new(witness_path).unwrap();
+            let out_witness_path_c = std::ffi::CString::new(out_witness_path).unwrap();
+            (super::dumpGroth16WitnessFromFile())(
+                witness_path_c.as_ptr() as *mut c_char,
+                out_witness_path_c.as_ptr() as *mut c_char,
+            );
+        }
+    }
+
+    // #[test]
+    // #[ignore]
+    // // Dump groth16 circuit from binary to dv-pari compatible format
+    // pub fn test_dump_groth16_circuit() {
+    //     let circuit_path = "./assets/groth16_circuit.bin";
+    //     let out_circuit_path = "./assets/dump_groth16_circuit.bin";
+    //     unsafe {
+    //         let circuit_path_c = std::ffi::CString::new(circuit_path).unwrap();
+    //         let out_circuit_path_c = std::ffi::CString::new(out_circuit_path).unwrap();
+    //         (super::dumpGroth16CircuitFromFile())(
+    //             circuit_path_c.as_ptr() as *mut c_char,
+    //             out_circuit_path_c.as_ptr() as *mut c_char,
+    //         );
+    //     }
+    // }
 }

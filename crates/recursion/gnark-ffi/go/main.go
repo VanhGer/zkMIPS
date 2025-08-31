@@ -38,6 +38,22 @@ import (
 
 func main() {}
 
+//export DumpGroth16Witness
+func DumpGroth16Witness(witnessPath *C.char, dumpWitnessPath *C.char) {
+	witnessPathString := C.GoString(witnessPath)
+	dumpWitnessPathString := C.GoString(dumpWitnessPath)
+
+	zkm.DumpGroth16Witness(witnessPathString, dumpWitnessPathString)
+}
+
+//export DumpGroth16Circuit
+func DumpGroth16Circuit(circuitPath *C.char, dumpCircuitPath *C.char) {
+	circuitPathString := C.GoString(circuitPath)
+	dumpCircuitPathString := C.GoString(dumpCircuitPath)
+
+	zkm.DumpGroth16Circuit(circuitPathString, dumpCircuitPathString)
+}
+
 //export ProvePlonkBn254
 func ProvePlonkBn254(dataDir *C.char, witnessPath *C.char) *C.C_PlonkBn254Proof {
 	dataDirString := C.GoString(dataDir)
