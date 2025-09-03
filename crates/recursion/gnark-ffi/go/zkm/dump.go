@@ -6,17 +6,20 @@ import (
 	"fmt"
 	"os"
     "encoding/binary"
-	"github.com/consensys/gnark-crypto/ecc"
-	"github.com/consensys/gnark/backend/groth16"
-    cs "github.com/consensys/gnark/constraint/bn254"
-    "github.com/consensys/gnark-crypto/ecc/bn254/fr"
+    "log"
+    "io"
+// 	"github.com/consensys/gnark-crypto/ecc"
+// 	"github.com/consensys/gnark/backend/groth16"
+    fr "github.com/consensys/gnark-crypto/ecc/sect/fr"
+    bcs "github.com/consensys/gnark/constraint/sect"
+    "github.com/consensys/gnark/frontend/cs/r1cs"
 	"github.com/consensys/gnark/constraint"
 	"github.com/consensys/gnark/frontend"
-	"github.com/consensys/gnark/backend/witness"
+// 	"github.com/consensys/gnark/backend/witness"
 
 )
 
-func DumpGroth16Witness(witnessInputPath string, dumpWitnessPath string) {
+func DumpGroth16(witnessInputPath string, dumpWitnessPath string, circuitInputPath string, dumpCircuitPath string) {
     data, err := os.ReadFile(witnessInputPath)
     if err != nil {
         panic(err)
@@ -29,117 +32,137 @@ func DumpGroth16Witness(witnessInputPath string, dumpWitnessPath string) {
         panic(err)
     }
 
-    assignment := NewCircuit(witnessInput)
-    witness, err2 := frontend.NewWitness(&assignment, ecc.BN254.ScalarField())
-    if err2 != nil {
-        panic(err2)
-    }
-    err3 := DumpWitness(witness, dumpWitnessPath)
-    if err3 != nil {
-        panic(err3)
-    }
-}
 
-func DumpWitness(w witness.Witness, filePath string) error {
-    f, err := os.Create(filePath)
-    if err != nil {
-        return err
-    }
-    defer f.Close()
+    // Initialize the circuit.
+	circuit := NewCircuit(witnessInput)
 
-    vector, ok := w.Vector().(fr.Vector)
-    if !ok {
-        return fmt.Errorf("unexpected witness vector type")
-    }
-    for _, el := range vector {
-        b := el.Bytes() // [32]byte, big-endian
-        if _, err := f.Write(b[:]); err != nil {
-            return err
-        }
-    }
-    return nil
-}
-
-func DumpGroth16Circuit(circuitInputPath string, dumpCircuitPath string) {
-    var r1cs constraint.ConstraintSystem = groth16.NewCS(ecc.BN254)
-    r1csFile, err := os.Open(circuitInputPath)
+	// Compile the circuit.
+	r1cs, err := frontend.Compile(fr.Modulus(), r1cs.NewBuilder, &circuit)
+	if err != nil {
+		panic(err)
+	}
+    r1csFile, err := os.Open(dumpCircuitPath)
     if err != nil {
         panic(err)
     }
-    r1csReader := bufio.NewReaderSize(r1csFile, 1024*1024)
-    r1cs.ReadFrom(r1csReader)
-    defer r1csFile.Close()
+    r1cs_contr := r1cs.(*bcs.R1CS)
+    Dump(r1cs_contr, r1csFile)
 
-//     fmt.Println(r1cs)
-    err2 := DumpR1CS(r1cs.(*cs.R1CS), dumpCircuitPath)
+    assignment := NewCircuit(witnessInput)
+    witness, err2 := frontend.NewWitness(&assignment, fr.Modulus())
     if err2 != nil {
         panic(err2)
     }
+
+    vector, ok := witness.Vector().(fr.Vector)
+    if ok {
+        fmt.Printf("Witness length: %d\n", len(vector))
+    } else {
+        fmt.Println("Witness vector type assertion failed")
+    }
+
+    publicWitnessData, err := witness.Public()
+    fmt.Printf("public length: %d\n", len(publicWitnessData.Vector().(fr.Vector)))
+
+    // Check if the witness satisfies the circuit
+    _solution, _ := r1cs.Solve(witness)
+
+    // concrete solution
+   	solution := _solution.(*bcs.R1CSSolution)
+
+    fmt.Printf("W length: %d\n", len(solution.W))
+    if len(solution.W) > 0 {
+        fmt.Printf("W[0]: %s\n", solution.W[0].String())
+    }
+
+    wfile, err3 := os.Create(dumpWitnessPath)
+    if err3 != nil {
+        panic(err3)
+    }
+    defer wfile.Close()
+
+    bytesWritten, err := solution.W.WriteTo(wfile)
+    if err != nil {
+        log.Fatalf("Failed to write to file: %v", err)
+    }
+
+	fmt.Printf("Successfully wrote %d bytes to %s\n", bytesWritten, dumpWitnessPath)
+
 }
 
-func DumpR1CS(r1cs *cs.R1CS, filePath string) error {
-    coeffs := r1cs.Coefficients
-    constraints := r1cs.GetR1Cs()
-//     fmt.Println("Number of constraints:", len(constraints))
+// Dump writes the coefficient table and the fully‑expanded R1Cs rows into w.
+// Caller decides where w points to (file, buffer, network, …).
+// Dump writes the coefficient table and the fully-expanded R1Cs rows into w.
+// It is functionally identical to the original version but batches I/O
+// through an internal bufio.Writer and uses raw little-endian encodes for
+// scalars to avoid reflection overhead in binary.Write.
+func Dump(r1cs *bcs.R1CS, w io.Writer) error {
+	// Wrap the destination with a large buffered writer (1 MiB; tune as needed).
+	bw := bufio.NewWriterSize(w, 1<<20)
+	defer bw.Flush() // ensure everything is pushed downstream
 
-    f, err := os.Create(filePath)
-    if err != nil {
-        return err
-    }
-    defer f.Close()
+	coeffs := r1cs.Coefficients
+	rows := r1cs.GetR1Cs()
 
-    if err := binary.Write(f, binary.LittleEndian, uint32(len(coeffs))); err != nil {
-        return err
-    }
-    for _, c := range coeffs {
-        b := c.Bytes()
-        padded := make([]byte, 32)
-        copy(padded[32-len(b):], b[:])
-        if _, err := f.Write(padded); err != nil {
-            return err
-        }
-    }
+	// A 4-byte scratch reused for every uint32 we encode.
+	var scratch [4]byte
 
-    if err := binary.Write(f, binary.LittleEndian, uint32(len(constraints))); err != nil {
-        return err
-    }
-    for _, c := range constraints {
-        nL := uint32(len(c.L))
-        nR := uint32(len(c.R))
-        nO := uint32(len(c.O))
-        if err := binary.Write(f, binary.LittleEndian, nL); err != nil {
-            return err
-        }
-        if err := binary.Write(f, binary.LittleEndian, nR); err != nil {
-            return err
-        }
-        if err := binary.Write(f, binary.LittleEndian, nO); err != nil {
-            return err
-        }
+	putU32 := func(v uint32) error {
+		binary.LittleEndian.PutUint32(scratch[:], v)
+		_, err := bw.Write(scratch[:])
+		return err
+	}
 
-        writeTerm := func(term constraint.Term) error {
-            if err := binary.Write(f, binary.LittleEndian, uint32(term.WireID())); err != nil {
-                return err
-            }
-            return binary.Write(f, binary.LittleEndian, uint32(term.CID))
-        }
-        for _, t := range c.L {
-            if err := writeTerm(t); err != nil {
-                return err
-            }
-        }
-        for _, t := range c.R {
-            if err := writeTerm(t); err != nil {
-                return err
-            }
-        }
-        for _, t := range c.O {
-            if err := writeTerm(t); err != nil {
-                return err
-            }
-        }
-    }
-    return nil
+	// 1. Coefficient table ---------------------------------------------------
+	if err := putU32(uint32(len(coeffs))); err != nil {
+		return err
+	}
+	for _, c := range coeffs {
+		if _, err := bw.Write(c.Marshal()); err != nil { // 32 bytes each
+			return err
+		}
+	}
+
+	// 2. Full R1CS rows ------------------------------------------------------
+	if err := putU32(uint32(len(rows))); err != nil {
+		return err
+	}
+
+	dumpLE := func(expr constraint.LinearExpression) error {
+		for _, t := range expr {
+			if err := putU32(uint32(t.WireID())); err != nil {
+				return err
+			}
+			if err := putU32(uint32(t.CoeffID())); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	for _, r := range rows {
+		if err := putU32(uint32(len(r.L))); err != nil {
+			return err
+		}
+		if err := putU32(uint32(len(r.R))); err != nil {
+			return err
+		}
+		if err := putU32(uint32(len(r.O))); err != nil {
+			return err
+		}
+
+		if err := dumpLE(r.L); err != nil {
+			return err
+		}
+		if err := dumpLE(r.R); err != nil {
+			return err
+		}
+		if err := dumpLE(r.O); err != nil {
+			return err
+		}
+	}
+
+	return bw.Flush() // explicit flush + propagate any error
 }
 
 

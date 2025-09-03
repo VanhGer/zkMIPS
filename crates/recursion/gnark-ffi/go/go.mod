@@ -6,7 +6,7 @@ toolchain go1.23.11
 
 require (
 	github.com/consensys/gnark v0.10.1-0.20240504023521-d9bfacd7cb60
-	github.com/consensys/gnark-crypto v0.14.0
+	github.com/consensys/gnark-crypto v0.14.1-0.20240909142611-e6b99e74cec1
 )
 
 require (
@@ -34,4 +34,6 @@ require (
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
 
-replace github.com/consensys/gnark => github.com/jtguibas/gnark v0.0.0-20240923234830-41125bc1909c
+replace github.com/consensys/gnark => ../../../../../gnark-jtguibas
+
+replace github.com/consensys/gnark-crypto => github.com/alpenlabs/gnark-crypto v0.0.0-20250521035818-134953372b00
