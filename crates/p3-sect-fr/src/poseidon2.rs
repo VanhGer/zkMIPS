@@ -91,8 +91,8 @@ mod tests {
         FpSECT as ark_FpBN256,
     };
     use ff::PrimeField;
-    use p3_field::Field;
-    use p3_poseidon2::{ExternalLayerConstants, Poseidon2, ExternalLayer, InternalLayer};
+    use p3_symmetric::Permutation;
+    use p3_poseidon2::ExternalLayerConstants;
     use rand::Rng;
     use zkhash::{
         ark_ff::{BigInteger, PrimeField as ark_PrimeField},
