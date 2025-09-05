@@ -5,7 +5,8 @@ use itertools::Itertools;
 use p3_field::{Field, FieldAlgebra};
 use p3_koala_bear::KoalaBear;
 
-use p3_bn254_fr::Bn254Fr;
+// use p3_bn254_fr::Bn254Fr;
+use p3_sect_fr::SectFr;
 use p3_symmetric::Permutation;
 use zkm_recursion_compiler::{
     circuit::CircuitV2Builder,
@@ -155,22 +156,22 @@ impl<C: CircuitConfig<F = KoalaBear, Bit = Felt<KoalaBear>>> FieldHasherVariable
 pub const BN254_DIGEST_SIZE: usize = 1;
 
 impl FieldHasher<KoalaBear> for KoalaBearPoseidon2Outer {
-    type Digest = [Bn254Fr; BN254_DIGEST_SIZE];
-
+    // type Digest = [Bn254Fr; BN254_DIGEST_SIZE];
+    type Digest = [SectFr; BN254_DIGEST_SIZE];
     fn constant_compress(input: [Self::Digest; 2]) -> Self::Digest {
-        let mut state = [input[0][0], input[1][0], Bn254Fr::ZERO];
+        let mut state = [input[0][0], input[1][0], SectFr::ZERO];
         outer_perm().permute_mut(&mut state);
         [state[0]; BN254_DIGEST_SIZE]
     }
 }
 
-impl<C: CircuitConfig<F = KoalaBear, N = Bn254Fr, Bit = Var<Bn254Fr>>> FieldHasherVariable<C>
+impl<C: CircuitConfig<F = KoalaBear, N = SectFr, Bit = Var<SectFr>>> FieldHasherVariable<C>
     for KoalaBearPoseidon2Outer
 {
-    type DigestVariable = [Var<Bn254Fr>; BN254_DIGEST_SIZE];
+    type DigestVariable = [Var<SectFr>; BN254_DIGEST_SIZE];
 
     fn hash(builder: &mut Builder<C>, input: &[Felt<<C as Config>::F>]) -> Self::DigestVariable {
-        assert!(C::N::bits() == p3_bn254_fr::Bn254Fr::bits());
+        assert!(C::N::bits() == p3_sect_fr::SectFr::bits());
         assert!(C::F::bits() == p3_koala_bear::KoalaBear::bits());
         let num_f_elms = C::N::bits() / C::F::bits();
         let mut state: [Var<C::N>; OUTER_MULTI_FIELD_CHALLENGER_WIDTH] =

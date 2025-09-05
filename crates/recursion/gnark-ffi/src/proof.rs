@@ -24,3 +24,7 @@ pub struct Groth16Bn254Proof {
     pub raw_proof: String,
     pub groth16_vkey_hash: [u8; 32],
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SectWitness {}
+

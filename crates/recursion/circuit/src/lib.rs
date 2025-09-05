@@ -6,7 +6,8 @@ use challenger::{
 };
 use hash::{FieldHasherVariable, Posedion2KoalaBearHasherVariable};
 use itertools::izip;
-use p3_bn254_fr::Bn254Fr;
+// use p3_bn254_fr::Bn254Fr;
+use p3_sect_fr::SectFr;
 use p3_field::FieldAlgebra;
 use p3_matrix::dense::RowMajorMatrix;
 use std::iter::{repeat, zip};
@@ -607,7 +608,7 @@ impl<C: CircuitConfig<F = KoalaBear, Bit = Felt<KoalaBear>>> KoalaBearFriConfigV
     }
 }
 
-impl<C: CircuitConfig<F = KoalaBear, N = Bn254Fr, Bit = Var<Bn254Fr>>> KoalaBearFriConfigVariable<C>
+impl<C: CircuitConfig<F = KoalaBear, N = SectFr, Bit = Var<SectFr>>> KoalaBearFriConfigVariable<C>
     for KoalaBearPoseidon2Outer
 {
     type FriChallengerVariable = MultiField32ChallengerVariable<C>;

@@ -206,15 +206,17 @@ pub trait Prover<C: ZKMProverComponents>: Send + Sync {
                     proof,
                     vkey,
                     &bundle.public_values,
-                    &if zkm_prover::build::zkm_dev_mode() {
-                        zkm_prover::build::groth16_bn254_artifacts_dev_dir()
-                    } else {
-                        try_install_circuit_artifacts("groth16")
-                    },
+                    // &if zkm_prover::build::zkm_dev_mode() {
+                        &zkm_prover::build::groth16_bn254_artifacts_dev_dir()
+                    // } else {
+                    //     try_install_circuit_artifacts("groth16")
+                    // },
                 )
                 .map_err(ZKMVerificationError::Groth16),
             ZKMProof::CompressToGroth16 => unreachable!(),
         }
+
+
     }
 }
 

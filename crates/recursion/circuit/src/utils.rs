@@ -1,4 +1,5 @@
-use p3_bn254_fr::Bn254Fr;
+// use p3_bn254_fr::Bn254Fr;
+use p3_sect_fr::SectFr;
 use p3_field::{FieldAlgebra, PrimeField32};
 use p3_koala_bear::KoalaBear;
 
@@ -10,13 +11,12 @@ use zkm_stark::Word;
 /// Convert 8 KoalaBear words into a Bn254Fr field element by shifting by 31 bits each time. The last
 /// word becomes the least significant bits.
 #[allow(dead_code)]
-pub fn koalabears_to_bn254(digest: &[KoalaBear; 8]) -> Bn254Fr {
-    let mut result = Bn254Fr::ZERO;
-    for word in digest.iter() {
-        // Since KoalaBear prime is less than 2^31, we can shift by 31 bits each time and still be
-        // within the Bn254Fr field, so we don't have to truncate the top 3 bits.
-        result *= Bn254Fr::from_canonical_u64(1 << 31);
-        result += Bn254Fr::from_canonical_u32(word.as_canonical_u32());
+pub fn koalabears_to_bn254(digest: &[KoalaBear; 8]) -> SectFr {
+    let mut result = SectFr::ZERO;
+    for (idx, word) in digest.iter().enumerate() {
+        result *= SectFr::from_canonical_u64(1 << 32);
+        let masked_val_u32 = if idx == 0 { 0 } else { word.as_canonical_u32() };
+        result += SectFr::from_canonical_u32(masked_val_u32);
     }
     result
 }
@@ -24,17 +24,12 @@ pub fn koalabears_to_bn254(digest: &[KoalaBear; 8]) -> Bn254Fr {
 /// Convert 32 KoalaBear bytes into a Bn254Fr field element. The first byte's most significant 3 bits
 /// (which would become the 3 most significant bits) are truncated.
 #[allow(dead_code)]
-pub fn koalabear_bytes_to_bn254(bytes: &[KoalaBear; 32]) -> Bn254Fr {
-    let mut result = Bn254Fr::ZERO;
-    for (i, byte) in bytes.iter().enumerate() {
-        debug_assert!(byte < &KoalaBear::from_canonical_u32(256));
-        if i == 0 {
-            // 32 bytes is more than Bn254 prime, so we need to truncate the top 3 bits.
-            result = Bn254Fr::from_canonical_u32(byte.as_canonical_u32() & 0x1f);
-        } else {
-            result *= Bn254Fr::from_canonical_u32(256);
-            result += Bn254Fr::from_canonical_u32(byte.as_canonical_u32());
-        }
+pub fn koalabear_bytes_to_bn254(bytes: &[KoalaBear; 32]) -> SectFr {
+    let mut result = SectFr::ZERO;
+    for (idx, byte) in bytes.iter().enumerate() {
+        result *= SectFr::from_canonical_u32(256); // shift by 7 bits
+        let masked = if idx < 4 { 0 } else { byte.as_canonical_u32() };
+        result += SectFr::from_canonical_u32(masked); // add 7-bit
     }
     result
 }
@@ -44,14 +39,17 @@ pub fn felts_to_bn254_var<C: Config>(
     builder: &mut Builder<C>,
     digest: &[Felt<C::F>; DIGEST_SIZE],
 ) -> Var<C::N> {
-    let var_2_31: Var<_> = builder.constant(C::N::from_canonical_u32(1 << 31));
+    let var_2_32: Var<_> = builder.constant(C::N::from_canonical_u64(1 << 32));
     let result = builder.constant(C::N::ZERO);
+    let zero_var: Var<_> = builder.constant(C::N::ZERO);
+
     for (i, word) in digest.iter().enumerate() {
-        let word_var = builder.felt2var_circuit(*word);
+        let all_bits: Vec<Var<C::N>> = builder.num2bits_f_circuit(*word);
+        let word_var = if i == 0 { zero_var } else { builder.bits2num_v_circuit(&all_bits) };
         if i == 0 {
             builder.assign(result, word_var);
         } else {
-            builder.assign(result, result * var_2_31 + word_var);
+            builder.assign(result, result * var_2_32 + word_var);
         }
     }
     result
@@ -67,16 +65,10 @@ pub fn felt_bytes_to_bn254_var<C: Config>(
     let result = builder.constant(C::N::ZERO);
     for (i, byte) in bytes.iter().enumerate() {
         let byte_bits = builder.num2bits_f_circuit(*byte);
+        let byte_var = if i < 4 { zero_var } else { builder.bits2num_v_circuit(&byte_bits) };
         if i == 0 {
-            // Since 32 bytes doesn't fit into Bn254, we need to truncate the top 3 bits.
-            // For first byte, zero out 3 most significant bits.
-            for i in 0..3 {
-                builder.assign(byte_bits[8 - i - 1], zero_var);
-            }
-            let byte_var = builder.bits2num_v_circuit(&byte_bits);
             builder.assign(result, byte_var);
         } else {
-            let byte_var = builder.bits2num_v_circuit(&byte_bits);
             builder.assign(result, result * var_256 + byte_var);
         }
     }

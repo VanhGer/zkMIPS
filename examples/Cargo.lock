@@ -1167,7 +1167,7 @@ checksum = "a3c196a77437e7cc2fb515ce413a6401291578b5afc8ecb29a3c7ab957f05941"
 dependencies = [
  "ff 0.12.1",
  "group 0.12.1",
- "pairing 0.22.0",
+ "pairing",
  "rand_core 0.6.4",
  "subtle",
 ]
@@ -3132,50 +3132,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "halo2curves"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d380afeef3f1d4d3245b76895172018cfb087d9976a7cabcd5597775b2933e07"
-dependencies = [
- "blake2",
- "digest 0.10.7",
- "ff 0.13.1",
- "group 0.13.0",
- "halo2derive",
- "hex",
- "lazy_static",
- "num-bigint 0.4.6",
- "num-integer",
- "num-traits",
- "pairing 0.23.0",
- "pasta_curves 0.5.1",
- "paste",
- "rand 0.8.5",
- "rand_core 0.6.4",
- "rayon",
- "serde",
- "serde_arrays",
- "sha2 0.10.8",
- "static_assertions",
- "subtle",
- "unroll",
-]
-
-[[package]]
-name = "halo2derive"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdb99e7492b4f5ff469d238db464131b86c2eaac814a78715acba369f64d2c76"
-dependencies = [
- "num-bigint 0.4.6",
- "num-integer",
- "num-traits",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4603,21 +4559,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "p3-bn254-fr"
-version = "0.1.0"
-source = "git+https://github.com/ProjectZKM/Plonky3#79f986caf008ee3ae455474f42100cb7227219f3"
-dependencies = [
- "ff 0.13.1",
- "halo2curves",
- "num-bigint 0.4.6",
- "p3-field",
- "p3-poseidon2",
- "p3-symmetric",
- "rand 0.8.5",
- "serde",
-]
-
-[[package]]
 name = "p3-challenger"
 version = "0.1.0"
 source = "git+https://github.com/ProjectZKM/Plonky3#79f986caf008ee3ae455474f42100cb7227219f3"
@@ -4870,6 +4811,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "p3-sect-fr"
+version = "1.1.4"
+dependencies = [
+ "ark-ff 0.4.2",
+ "ff 0.13.1",
+ "lazy_static",
+ "num-bigint 0.4.6",
+ "num-traits",
+ "p3-field",
+ "p3-poseidon2",
+ "p3-symmetric",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "zkhash",
+]
+
+[[package]]
 name = "p3-symmetric"
 version = "0.1.0"
 source = "git+https://github.com/ProjectZKM/Plonky3#79f986caf008ee3ae455474f42100cb7227219f3"
@@ -4913,15 +4872,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "135590d8bdba2b31346f9cd1fb2a912329f5135e832a4f422942eb6ead8b6b3b"
 dependencies = [
  "group 0.12.1",
-]
-
-[[package]]
-name = "pairing"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81fec4625e73cf41ef4bb6846cafa6d44736525f442ba45e407c4a000a13996f"
-dependencies = [
- "group 0.13.0",
 ]
 
 [[package]]
@@ -5010,10 +4960,8 @@ dependencies = [
  "blake2b_simd",
  "ff 0.13.1",
  "group 0.13.0",
- "hex",
  "lazy_static",
  "rand 0.8.5",
- "serde",
  "static_assertions",
  "subtle",
 ]
@@ -6419,15 +6367,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_arrays"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38636132857f68ec3d5f3eb121166d2af33cb55174c4d5ff645db6165cbef0fd"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "serde_bytes"
 version = "0.11.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7790,16 +7729,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 
 [[package]]
-name = "unroll"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ad948c1cb799b1a70f836077721a92a35ac177d4daddf4c20a633786d4cf618"
-dependencies = [
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "untrusted"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8871,12 +8800,12 @@ dependencies = [
  "itertools 0.13.0",
  "lru",
  "num-bigint 0.4.6",
- "p3-bn254-fr",
  "p3-challenger",
  "p3-commit",
  "p3-field",
  "p3-koala-bear",
  "p3-matrix",
+ "p3-sect-fr",
  "p3-symmetric",
  "p3-util",
  "rayon",
@@ -8905,7 +8834,6 @@ dependencies = [
  "itertools 0.13.0",
  "num-traits",
  "p3-air",
- "p3-bn254-fr",
  "p3-challenger",
  "p3-commit",
  "p3-dft",
@@ -8913,6 +8841,7 @@ dependencies = [
  "p3-fri",
  "p3-koala-bear",
  "p3-matrix",
+ "p3-sect-fr",
  "p3-symmetric",
  "p3-util",
  "rand 0.8.5",
@@ -8935,9 +8864,9 @@ version = "1.1.4"
 dependencies = [
  "backtrace",
  "itertools 0.13.0",
- "p3-bn254-fr",
  "p3-field",
  "p3-koala-bear",
+ "p3-sect-fr",
  "p3-symmetric",
  "serde",
  "tracing",
@@ -8958,7 +8887,6 @@ dependencies = [
  "hashbrown 0.14.5",
  "itertools 0.13.0",
  "p3-air",
- "p3-bn254-fr",
  "p3-challenger",
  "p3-commit",
  "p3-dft",
@@ -8970,6 +8898,7 @@ dependencies = [
  "p3-merkle-tree",
  "p3-monty-31",
  "p3-poseidon2",
+ "p3-sect-fr",
  "p3-symmetric",
  "p3-util",
  "serde",

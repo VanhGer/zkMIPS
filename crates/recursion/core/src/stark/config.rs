@@ -1,4 +1,3 @@
-use p3_bn254_fr::{Bn254Fr, Poseidon2Bn254};
 use p3_challenger::MultiField32Challenger;
 use p3_commit::ExtensionMmcs;
 use p3_dft::Radix2DitParallel;
@@ -6,10 +5,13 @@ use p3_field::{extension::BinomialExtensionField, FieldAlgebra};
 use p3_fri::{BatchOpening, CommitPhaseProofStep, FriConfig, FriProof, QueryProof, TwoAdicFriPcs};
 use p3_koala_bear::KoalaBear;
 use p3_merkle_tree::MerkleTreeMmcs;
-use p3_poseidon2::ExternalLayerConstants;
+use p3_poseidon2::{ExternalLayer, ExternalLayerConstants};
+use p3_poseidon2::{Poseidon2};
+use p3_sect_fr::SectFr;
 use p3_symmetric::{Hash, MultiField32PaddingFreeSponge, TruncatedPermutation};
 use serde::{Deserialize, Serialize};
 use zkm_stark::{Com, StarkGenericConfig, ZeroCommitment};
+use p3_sect_fr::poseidon2::{Poseidon2InternalLayerSect, Poseidon2ExternalLayerSect, Poseidon2Sect};
 
 use super::{poseidon2::bn254_poseidon2_rc3, zkm_dev_mode};
 
@@ -22,18 +24,17 @@ pub const OUTER_MULTI_FIELD_CHALLENGER_DIGEST_SIZE: usize = 1;
 /// A configuration for outer recursion.
 pub type OuterVal = KoalaBear;
 pub type OuterChallenge = BinomialExtensionField<OuterVal, 4>;
-pub type OuterPerm = Poseidon2Bn254<3>;
-pub type OuterHash =
-    MultiField32PaddingFreeSponge<OuterVal, Bn254Fr, OuterPerm, 3, 16, DIGEST_SIZE>;
-pub type OuterDigestHash = Hash<OuterVal, Bn254Fr, DIGEST_SIZE>;
-pub type OuterDigest = [Bn254Fr; DIGEST_SIZE];
+pub type OuterPerm = Poseidon2Sect<3>;
+pub type OuterHash = MultiField32PaddingFreeSponge<OuterVal, SectFr, OuterPerm, 3, 16, DIGEST_SIZE>;
+pub type OuterDigestHash = Hash<OuterVal, SectFr, DIGEST_SIZE>;
+pub type OuterDigest = [SectFr; DIGEST_SIZE];
 pub type OuterCompress = TruncatedPermutation<OuterPerm, 2, 1, 3>;
-pub type OuterValMmcs = MerkleTreeMmcs<KoalaBear, Bn254Fr, OuterHash, OuterCompress, 1>;
+pub type OuterValMmcs = MerkleTreeMmcs<KoalaBear, SectFr, OuterHash, OuterCompress, 1>;
 pub type OuterChallengeMmcs = ExtensionMmcs<OuterVal, OuterChallenge, OuterValMmcs>;
 pub type OuterDft = Radix2DitParallel<OuterVal>;
 pub type OuterChallenger = MultiField32Challenger<
     OuterVal,
-    Bn254Fr,
+    SectFr,
     OuterPerm,
     OUTER_MULTI_FIELD_CHALLENGER_WIDTH,
     OUTER_MULTI_FIELD_CHALLENGER_RATE,
@@ -80,6 +81,7 @@ pub fn outer_fri_config() -> FriConfig<OuterChallengeMmcs> {
             Err(_) => 21,
         }
     };
+    tracing::info!("num_queries: {}", num_queries);
     FriConfig { log_blowup: 4, num_queries, proof_of_work_bits: 16, mmcs: challenge_mmcs }
 }
 
@@ -98,6 +100,7 @@ pub fn outer_fri_config_with_blowup(log_blowup: usize) -> FriConfig<OuterChallen
             Err(_) => 84 / log_blowup,
         }
     };
+    tracing::info!("num_queries: {}", num_queries);
     FriConfig { log_blowup, num_queries, proof_of_work_bits: 16, mmcs: challenge_mmcs }
 }
 
@@ -176,7 +179,7 @@ impl StarkGenericConfig for KoalaBearPoseidon2Outer {
 
 impl ZeroCommitment<KoalaBearPoseidon2Outer> for OuterPcs {
     fn zero_commitment(&self) -> Com<KoalaBearPoseidon2Outer> {
-        OuterDigestHash::from([Bn254Fr::ZERO; DIGEST_SIZE])
+        OuterDigestHash::from([SectFr::ZERO; DIGEST_SIZE])
     }
 }
 

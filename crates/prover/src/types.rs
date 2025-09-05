@@ -2,7 +2,7 @@ use std::{fs::File, path::Path};
 
 use anyhow::Result;
 use clap::ValueEnum;
-use p3_bn254_fr::Bn254Fr;
+use p3_sect_fr::SectFr;
 use p3_commit::{Pcs, TwoAdicMultiplicativeCoset};
 use p3_field::{FieldAlgebra, PrimeField, PrimeField32, TwoAdicField};
 use p3_koala_bear::KoalaBear;
@@ -47,7 +47,7 @@ pub trait HashableKey {
     /// Hash the key into a digest of  u32 elements.
     fn hash_u32(&self) -> [u32; DIGEST_SIZE];
 
-    fn hash_bn254(&self) -> Bn254Fr {
+    fn hash_bn254(&self) -> SectFr {
         koalabears_to_bn254(&self.hash_koalabear())
     }
 

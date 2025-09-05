@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 
-use p3_bn254_fr::Bn254Fr;
+// use p3_bn254_fr::Bn254Fr;
+use p3_sect_fr::SectFr;
 use p3_field::FieldAlgebra;
 
 use p3_fri::{CommitPhaseProofStep, QueryProof};
@@ -23,10 +24,11 @@ use super::{WitnessWriter, Witnessable};
 
 impl WitnessWriter<OuterConfig> for OuterWitness<OuterConfig> {
     fn write_bit(&mut self, value: bool) {
-        self.vars.push(Bn254Fr::from_bool(value));
+        // self.vars.push(Bn254Fr::from_bool(value));
+        self.vars.push(SectFr::from_bool(value));
     }
 
-    fn write_var(&mut self, value: Bn254Fr) {
+    fn write_var(&mut self, value: SectFr) {
         self.vars.push(value);
     }
 
@@ -39,8 +41,8 @@ impl WitnessWriter<OuterConfig> for OuterWitness<OuterConfig> {
     }
 }
 
-impl<C: CircuitConfig<N = Bn254Fr>> Witnessable<C> for Bn254Fr {
-    type WitnessVariable = Var<Bn254Fr>;
+impl<C: CircuitConfig<N = SectFr>> Witnessable<C> for SectFr {
+    type WitnessVariable = Var<SectFr>;
 
     fn read(&self, builder: &mut Builder<C>) -> Self::WitnessVariable {
         builder.witness_var()

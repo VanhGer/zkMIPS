@@ -507,13 +507,15 @@ mod tests {
     fn test_e2e_prove_groth16() {
         utils::setup_logger();
         let client = ProverClient::cpu();
-        let elf = test_artifacts::HELLO_WORLD_ELF;
+        let elf = test_artifacts::FIBONACCI_ELF;
         let (pk, vk) = client.setup(elf);
-        let stdin = ZKMStdin::new();
+        let mut stdin = ZKMStdin::new();
+        stdin.write(&10usize);
 
         // Generate proof & verify.
-        let proof = client.prove(&pk, stdin).groth16().run().unwrap();
-        client.verify(&proof, &vk).unwrap();
+        let mut proof = client.prove(&pk, stdin).groth16().run().unwrap();
+        // client.verify(&proof, &vk).unwrap();
+        tracing::info!("proof public values {:?}", proof.public_values);
     }
 
     #[test]

@@ -19,7 +19,8 @@ p3-util = { workspace = true }
 p3-symmetric = { workspace = true }
 p3-challenger = { workspace = true }
 p3-dft = { workspace = true }
-p3-bn254-fr = { workspace = true }
+#p3-bn254-fr = { workspace = true }
+p3-sect-fr = { workspace = true }
 p3-koala-bear = { workspace = true }
 
 zkm-core-machine = { workspace = true }

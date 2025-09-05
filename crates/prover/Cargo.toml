@@ -23,7 +23,8 @@ zkm-primitives = { workspace = true }
 p3-field = { workspace = true }
 p3-challenger = { workspace = true }
 p3-koala-bear = { workspace = true }
-p3-bn254-fr = { workspace = true }
+#p3-bn254-fr = { workspace = true }
+p3-sect-fr = { workspace = true }
 p3-commit = { workspace = true }
 p3-util = { workspace = true }
 bincode = "1.3.3"

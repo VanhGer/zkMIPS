@@ -180,6 +180,10 @@ pub fn prove_groth16_bn254(data_dir: &str, witness_path: &str) -> Groth16Bn254Pr
     }
 }
 
+pub fn prove_witness_sect(data_dir: &str, witness_path: &str) {
+    prove(ProofSystem::Groth16, data_dir, witness_path);
+}
+
 pub fn verify_groth16_bn254(
     data_dir: &str,
     proof: &str,

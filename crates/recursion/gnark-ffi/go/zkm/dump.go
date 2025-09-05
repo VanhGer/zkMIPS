@@ -1,19 +1,19 @@
 package zkm
 
 import (
-    "bufio"
+//     "bufio"
 	"encoding/json"
 	"fmt"
 	"os"
-    "encoding/binary"
+//     "encoding/binary"
     "log"
-    "io"
+//     "io"
 // 	"github.com/consensys/gnark-crypto/ecc"
 // 	"github.com/consensys/gnark/backend/groth16"
     fr "github.com/consensys/gnark-crypto/ecc/sect/fr"
     bcs "github.com/consensys/gnark/constraint/sect"
     "github.com/consensys/gnark/frontend/cs/r1cs"
-	"github.com/consensys/gnark/constraint"
+// 	"github.com/consensys/gnark/constraint"
 	"github.com/consensys/gnark/frontend"
 // 	"github.com/consensys/gnark/backend/witness"
 
@@ -89,80 +89,3 @@ func DumpGroth16(witnessInputPath string, dumpWitnessPath string, circuitInputPa
 	fmt.Printf("Successfully wrote %d bytes to %s\n", bytesWritten, dumpWitnessPath)
 
 }
-
-// Dump writes the coefficient table and the fully‑expanded R1Cs rows into w.
-// Caller decides where w points to (file, buffer, network, …).
-// Dump writes the coefficient table and the fully-expanded R1Cs rows into w.
-// It is functionally identical to the original version but batches I/O
-// through an internal bufio.Writer and uses raw little-endian encodes for
-// scalars to avoid reflection overhead in binary.Write.
-func Dump(r1cs *bcs.R1CS, w io.Writer) error {
-	// Wrap the destination with a large buffered writer (1 MiB; tune as needed).
-	bw := bufio.NewWriterSize(w, 1<<20)
-	defer bw.Flush() // ensure everything is pushed downstream
-
-	coeffs := r1cs.Coefficients
-	rows := r1cs.GetR1Cs()
-
-	// A 4-byte scratch reused for every uint32 we encode.
-	var scratch [4]byte
-
-	putU32 := func(v uint32) error {
-		binary.LittleEndian.PutUint32(scratch[:], v)
-		_, err := bw.Write(scratch[:])
-		return err
-	}
-
-	// 1. Coefficient table ---------------------------------------------------
-	if err := putU32(uint32(len(coeffs))); err != nil {
-		return err
-	}
-	for _, c := range coeffs {
-		if _, err := bw.Write(c.Marshal()); err != nil { // 32 bytes each
-			return err
-		}
-	}
-
-	// 2. Full R1CS rows ------------------------------------------------------
-	if err := putU32(uint32(len(rows))); err != nil {
-		return err
-	}
-
-	dumpLE := func(expr constraint.LinearExpression) error {
-		for _, t := range expr {
-			if err := putU32(uint32(t.WireID())); err != nil {
-				return err
-			}
-			if err := putU32(uint32(t.CoeffID())); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-
-	for _, r := range rows {
-		if err := putU32(uint32(len(r.L))); err != nil {
-			return err
-		}
-		if err := putU32(uint32(len(r.R))); err != nil {
-			return err
-		}
-		if err := putU32(uint32(len(r.O))); err != nil {
-			return err
-		}
-
-		if err := dumpLE(r.L); err != nil {
-			return err
-		}
-		if err := dumpLE(r.R); err != nil {
-			return err
-		}
-		if err := dumpLE(r.O); err != nil {
-			return err
-		}
-	}
-
-	return bw.Flush() // explicit flush + propagate any error
-}
-
-

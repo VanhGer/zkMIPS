@@ -1,6 +1,7 @@
 use anyhow::Result;
 use zkm_core_executor::ZKMContext;
 use zkm_core_machine::io::ZKMStdin;
+use zkm_primitives::io::ZKMPublicValues;
 use zkm_prover::{components::DefaultProverComponents, ZKMProver};
 
 use crate::install::try_install_circuit_artifacts;
@@ -8,7 +9,7 @@ use crate::{
     provers::ProofOpts, Prover, ZKMProof, ZKMProofKind, ZKMProofWithPublicValues, ZKMProvingKey,
     ZKMVerifyingKey,
 };
-
+use crate::ZKMProof::Core;
 use super::ProverType;
 
 /// An implementation of [crate::ProverClient] that can generate end-to-end proofs locally.
@@ -45,18 +46,16 @@ impl CpuProver {
         // Genenerate the wrap proof.
         let outer_proof = self.prover.wrap_bn254(shrink_proof, opts.zkm_prover_opts)?;
 
-        let groth16_bn254_artifacts = if zkm_prover::build::zkm_dev_mode() {
+        let groth16_bn254_artifacts =
             zkm_prover::build::try_build_groth16_bn254_artifacts_dev(
                 &outer_proof.vk,
                 &outer_proof.proof,
-            )
-        } else {
-            try_install_circuit_artifacts("groth16")
-        };
+            );
 
-        let proof = self.prover.wrap_groth16_bn254(outer_proof, &groth16_bn254_artifacts);
+
+        let _sect_witness = self.prover.wrap_sect(outer_proof, &groth16_bn254_artifacts);
         Ok(ZKMProofWithPublicValues {
-            proof: ZKMProof::Groth16(proof),
+            proof: Core(vec![]),
             stdin,
             public_values,
             zkm_version: self.version().to_string(),
@@ -84,7 +83,7 @@ impl Prover<DefaultProverComponents> for CpuProver {
         opts: ProofOpts,
         context: ZKMContext<'a>,
         kind: ZKMProofKind,
-        _elf_id: Option<String>,
+        _elf_id: Option<String>,    
     ) -> Result<(ZKMProofWithPublicValues, u64)> {
         if kind == ZKMProofKind::CompressToGroth16 {
             return Ok((self.compress_to_groth16(stdin, opts)?, 0));
@@ -146,25 +145,26 @@ impl Prover<DefaultProverComponents> for CpuProver {
                 ZKMProofWithPublicValues {
                     proof: ZKMProof::Plonk(proof),
                     stdin,
-                    public_values,
+                    public_values: ZKMPublicValues::default(),
                     zkm_version: self.version().to_string(),
                 },
                 cycles,
             ));
         } else if kind == ZKMProofKind::Groth16 {
-            let groth16_bn254_artifacts = if zkm_prover::build::zkm_dev_mode() {
+            let groth16_bn254_artifacts =
                 zkm_prover::build::try_build_groth16_bn254_artifacts_dev(
                     &outer_proof.vk,
                     &outer_proof.proof,
-                )
-            } else {
-                try_install_circuit_artifacts("groth16")
-            };
+                );
+            // } else {
+            //     try_install_circuit_artifacts("groth16")
+            // };
 
-            let proof = self.prover.wrap_groth16_bn254(outer_proof, &groth16_bn254_artifacts);
+            // let proof = self.prover.wrap_groth16_bn254(outer_proof, &groth16_bn254_artifacts);
+            let _sect_witness = self.prover.wrap_sect(outer_proof, &groth16_bn254_artifacts);
             return Ok((
                 ZKMProofWithPublicValues {
-                    proof: ZKMProof::Groth16(proof),
+                    proof: ZKMProof::Core(vec![]),
                     stdin,
                     public_values,
                     zkm_version: self.version().to_string(),

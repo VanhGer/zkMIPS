@@ -27,6 +27,7 @@ members = [
     "crates/test-artifacts",
     "crates/verifier",
     "crates/zkvm/*",
+    "crates/p3-sect-fr"
 ]
 exclude = ["examples/target"]
 resolver = "2"
@@ -91,6 +92,7 @@ zkm-prover = { path = "crates/prover" }
 zkm-build = { path = "crates/build" }
 zkm-sdk = { path = "crates/sdk" }
 zkm-verifier = { path = "crates/verifier" }
+p3-sect-fr = { path = "crates/p3-sect-fr" }
 
 zkm-lib = { path = "crates/zkvm/lib", default-features = false }
 zkm-zkvm = { path = "crates/zkvm/entrypoint", default-features = false }
