@@ -276,7 +276,7 @@ func Dump(r1cs *bcs.R1CS, w io.Writer) error {
 
 func DumpR1CSIfItExists() bool {
 	// Check input exists
-	if stat, err := os.Stat("/r1cs_cached"); err != nil {
+	if stat, err := os.Stat("./r1cs_cached"); err != nil {
 		// doesn't exist or not accessible
 		return false
 	} else if stat.Size() < 1024 {
@@ -284,7 +284,7 @@ func DumpR1CSIfItExists() bool {
 	}
 
 	// Open input
-	r1cs_fn := "/r1cs_cached"
+	r1cs_fn := "./r1cs_cached"
 	file, err := os.Open(r1cs_fn)
 	if err != nil {
 		log.Fatalf("Failed to create file: %v", err)
@@ -297,7 +297,7 @@ func DumpR1CSIfItExists() bool {
 	fmt.Printf("Successfully read %d bytes from %s\n", bytesRead, r1cs_fn)
 
 	// Create output
-	new_r1cs_fn := "/r1cs_to_dvsnark"
+	new_r1cs_fn := "./r1cs_to_dvsnark"
 	new_file, err := os.Create(new_r1cs_fn)
 	if err != nil {
 		log.Fatalf("Failed to create file: %v", err)
@@ -375,7 +375,7 @@ func BuildGroth16(dataDir string) {
     }
 
 	{
-        r1cs_fn := "/r1cs_cached"
+        r1cs_fn := "./r1cs_cached"
         file, err := os.Create(r1cs_fn)
         if err != nil {
             log.Fatalf("Failed to create file: %v", err)
@@ -389,7 +389,7 @@ func BuildGroth16(dataDir string) {
     }
 
     {
-        r1cs_fn := "/r1cs_to_dvsnark"
+        r1cs_fn := "./r1cs_to_dvsnark"
         file, err := os.Create(r1cs_fn)
         if err != nil {
             log.Fatalf("Failed to create file: %v", err)

@@ -99,8 +99,8 @@ func ProvePlonk(dataDir string, witnessPath string) Proof {
 }
 
 func SaveWitnessToFile(witnessPath string) {
-
-	r1cs_fn := "/r1cs_cached"
+    fmt.Printf("witnessPATH: %s\n", witnessPath)
+	r1cs_fn := "./r1cs_cached"
 	file, err := os.Open(r1cs_fn)
 	if err != nil {
 		log.Fatalf("Failed to create file: %v", err)
@@ -143,7 +143,7 @@ func SaveWitnessToFile(witnessPath string) {
 	}
 	solution := _solution.(*bcs.R1CSSolution)
 
-	witness_fn := "/witness_to_dvsnark"
+	witness_fn := "./witness_to_dvsnark"
 	wfile, err := os.Create(witness_fn)
 	if err != nil {
 		log.Fatalf("Failed to create file: %v", err)
