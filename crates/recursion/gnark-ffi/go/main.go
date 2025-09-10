@@ -38,17 +38,6 @@ import (
 
 func main() {}
 
-//export DumpGroth16
-func DumpGroth16(witnessPath *C.char, dumpWitnessPath *C.char, circuitPath *C.char, dumpCircuitPath *C.char) {
-	witnessPathString := C.GoString(witnessPath)
-	dumpWitnessPathString := C.GoString(dumpWitnessPath)
-    circuitPathString := C.GoString(circuitPath)
-    dumpCircuitPathString := C.GoString(dumpCircuitPath)
-
-	zkm.DumpGroth16(witnessPathString, dumpWitnessPathString, circuitPathString, dumpCircuitPathString)
-}
-
-
 //export ProvePlonkBn254
 func ProvePlonkBn254(dataDir *C.char, witnessPath *C.char) *C.C_PlonkBn254Proof {
 	dataDirString := C.GoString(dataDir)

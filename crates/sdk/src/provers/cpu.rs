@@ -166,7 +166,7 @@ impl Prover<DefaultProverComponents> for CpuProver {
                 ZKMProofWithPublicValues {
                     proof: ZKMProof::Core(vec![]),
                     stdin,
-                    public_values,
+                    public_values, //return raw public values as it will be needed to verify public input again r1cs witness
                     zkm_version: self.version().to_string(),
                 },
                 cycles,

@@ -61,9 +61,6 @@ impl ProofSystem {
         }
     }
 }
-fn dumpGroth16FromFile() -> unsafe extern "C" fn(*mut c_char, *mut c_char, *mut c_char, *mut c_char) {
-    bind::DumpGroth16
-}
 
 enum ProveFunction {
     Plonk(unsafe extern "C" fn(*mut c_char, *mut c_char) -> *mut C_PlonkBn254Proof),
@@ -276,27 +273,5 @@ mod tests {
         let result = perm.permute(zeros);
         println!("{result:?}");
         super::test_koalabear_poseidon2();
-    }
-
-    #[test]
-    #[ignore]
-    pub fn test_dump_groth16() {
-
-        let witness_path = "./assets/groth16_witness.json";
-        let out_witness_path = "./assets/dump_groth16_witness.bin";
-        let circuit_path = "./assets/groth16_circuit.bin";
-            let out_circuit_path = "./assets/dump_groth16_circuit.bin";
-        unsafe {
-            let witness_path_c = std::ffi::CString::new(witness_path).unwrap();
-            let out_witness_path_c = std::ffi::CString::new(out_witness_path).unwrap();
-            let circuit_path_c = std::ffi::CString::new(circuit_path).unwrap();
-            let out_circuit_path_c = std::ffi::CString::new(out_circuit_path).unwrap();
-            (super::dumpGroth16FromFile())(
-                witness_path_c.as_ptr() as *mut c_char,
-                out_witness_path_c.as_ptr() as *mut c_char,
-                circuit_path_c.as_ptr() as *mut c_char,
-                out_circuit_path_c.as_ptr() as *mut c_char,
-            );
-        }
     }
 }

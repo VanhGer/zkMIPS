@@ -8,6 +8,7 @@ use crate::{ffi::prove_witness_sect, GnarkWitness, SectWitness};
 pub struct SectWitnessGenerator;
 
 impl SectWitnessGenerator {
+    // referenced from Groth16Bn254Prover::prove
     pub fn prove<C: Config>(&self, witness: Witness<C>, build_dir: PathBuf) -> SectWitness {
         // Write witness.
         let mut witness_file = tempfile::NamedTempFile::new().unwrap();

@@ -641,7 +641,6 @@ pub(crate) mod tests {
 
         let mut backend = ConstraintCompiler::<C>::default();
         let constraints = backend.emit(builder.into_operations());
-        // PlonkBn254Prover::test::<C>(constraints.clone(), OuterWitness::default());
-        Groth16Bn254Prover::test::<C>(constraints.clone(), OuterWitness::default());
+        PlonkBn254Prover::test::<C>(constraints.clone(), OuterWitness::default());
     }
 }

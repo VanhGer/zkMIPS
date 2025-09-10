@@ -504,7 +504,7 @@ mod tests {
     }
 
     #[test]
-    fn test_e2e_prove_groth16() {
+    fn test_generate_sect_proof_single_step() {
         utils::setup_logger();
         let client = ProverClient::cpu();
         let elf = test_artifacts::FIBONACCI_ELF;
