@@ -8,6 +8,9 @@ use crate::operations::round_key::NextRoundKey;
 #[derive(AlignedBorrow)]
 #[repr(C)]
 pub struct AES128EncryptionCols<T> {
+    pub state_subs_bytes: [MemoryReadCols<T>; 16], // byte subs for state
+    pub sbox: [MemoryReadCols<T>; 24], //24 * 11 = 264 > 256 Sbox elements.
+
     pub shard: T,
     pub clk: T,
     pub is_real: T,
@@ -18,14 +21,13 @@ pub struct AES128EncryptionCols<T> {
     pub sbox_addr_read: MemoryReadCols<T>,
     pub key: [MemoryReadCols<T>; 4],
     pub block: [MemoryReadWriteCols<T>; 4],
-    pub sbox: [MemoryReadCols<T>; 24], //24 * 11 = 264 > 256 Sbox elements.
+
     pub round: [T; 11], // [0,..10]
     pub round_1to9: T, // 1 to 9
     pub state_matrix: [T; 16],
     pub round_key_matrix: [T; 16],
     pub next_round_key: NextRoundKey<T>,
     pub roundkey_subs_bytes: [MemoryReadCols<T>; 4], // byte subs for round key
-    pub state_subs_bytes: [MemoryReadCols<T>; 16], // byte subs for state
     pub mix_column: MixColumn<T>,
     pub add_round_key: [T; 16], // result of this round
 }

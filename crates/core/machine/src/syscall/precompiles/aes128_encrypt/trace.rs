@@ -151,89 +151,116 @@ impl AES128EncryptChip {
             } else
             {
                 // subs_bytes
-                for i in 0..AES_128_BLOCK_BYTES {
-                    cols.state_subs_bytes[i].populate(
-                        event.sbox_read_records[sbox_read_index + i],
-                        blu
-                    );
-                    state[i] = event.sbox_reads[sbox_read_index + i];
+                if round == 1 {
+                    for i in 0..state.len() {
+                        log::info!("tracing: before r1:  state[{}] = {:x}", i, state[i]);
+                    }
+                }
+                // for i in 0..AES_128_BLOCK_BYTES {
+                for i in 0..2 {
+                    if round == 1 {
+                        cols.state_subs_bytes[i].populate(
+                            event.sbox_read_records[sbox_read_index + i],
+                            blu
+                        );
+
+                        log::info!("i: {:?}",
+                            cols.state_subs_bytes[i].access
+                        );
+
+                        // diff minus one:
+
+
+                        assert_eq!(event.sbox_read_records[sbox_read_index + i].value, AES_SBOX[state[i] as usize]);
+                        assert_eq!(event.sbox_read_records[sbox_read_index + i].value, event.sbox_reads[sbox_read_index + i] as u32);
+                        state[i] = event.sbox_reads[sbox_read_index + i];
+                    }
+                    // if round == 1 {
+                    //     log::info!("sbox_ read index: {}", sbox_read_index);
+                    //     log::info!("state subs bytes: {:?}", cols.state_subs_bytes[i].access.value);
+                    //     log::info!("state {}, before subs: {}", i, state[i]);
+                    // }
+
+                    // if round == 1 {
+                    //     log::info!("state {}, after subs: {}", i, state[i]);
+                    // }
                 }
                 sbox_read_index += AES_128_BLOCK_BYTES;
 
-                // shift_rows
-                let shifted_row = [
-                    state[0], state[5], state[10], state[15],
-                    state[4], state[9], state[14], state[3],
-                    state[8], state[13], state[2], state[7],
-                    state[12], state[1], state[6], state[11],
-                ];
-
-                // Mix columns
-                let mixed_columns = if round != 10 {
-                    cols.mix_column.populate(
-                        blu,
-                        &shifted_row
-                    )
-                } else {
-                    shifted_row
-                };
-
-                // Add round key
-                for i in 0..AES_128_BLOCK_BYTES {
-                    state[i] = mixed_columns[i] ^ round_key[i];
-                    cols.add_round_key[i] = F::from_canonical_u8(state[i]);
-                    let byte_lookup_event = ByteLookupEvent {
-                        opcode: ByteOpcode::XOR,
-                        a1: state[i] as u16,
-                        a2: 0,
-                        b: mixed_columns[i],
-                        c: round_key[i],
-                    };
-                    blu.add_byte_lookup_event(byte_lookup_event);
-                }
+                // // shift_rows
+                // let shifted_row = [
+                //     state[0], state[5], state[10], state[15],
+                //     state[4], state[9], state[14], state[3],
+                //     state[8], state[13], state[2], state[7],
+                //     state[12], state[1], state[6], state[11],
+                // ];
+                //
+                // // Mix columns
+                // let mixed_columns = if round != 10 {
+                //     cols.mix_column.populate(
+                //         blu,
+                //         &shifted_row
+                //     )
+                // } else {
+                //     shifted_row
+                // };
+                //
+                // // Add round key
+                // for i in 0..AES_128_BLOCK_BYTES {
+                //     state[i] = mixed_columns[i] ^ round_key[i];
+                //     cols.add_round_key[i] = F::from_canonical_u8(state[i]);
+                //     let byte_lookup_event = ByteLookupEvent {
+                //         opcode: ByteOpcode::XOR,
+                //         a1: state[i] as u16,
+                //         a2: 0,
+                //         b: mixed_columns[i],
+                //         c: round_key[i],
+                //     };
+                //     blu.add_byte_lookup_event(byte_lookup_event);
+                // }
             }
 
             if round != 10 {
                 // read 24 sbox elements for each, except the last round
-                for i in sbox_read_index..sbox_read_index + 24 {
-                    cols.sbox[i - sbox_read_index].populate(
-                        event.sbox_read_records[i],
-                        blu
-                    )
-                }
-                sbox_read_index += 24;
+                // for i in sbox_read_index..sbox_read_index + 24 {
+                //     cols.sbox[i - sbox_read_index].populate(
+                //         event.sbox_read_records[i],
+                //         blu
+                //     )
+                // }
+                // sbox_read_index += 24;
 
 
-                // compute next round key
-                let next_round_key = cols.next_round_key.populate(
-                    blu,
-                    &round_key,
-                    event.sbox_read_records[sbox_read_index..sbox_read_index + 4]
-                        .try_into()
-                        .expect("Slice length must be exactly 4"),
-                    round as u8,
-                );
-
-                // read the round key byte subs
-                for i in 0..4 {
-                    cols.roundkey_subs_bytes[i].populate(
-                        event.sbox_read_records[sbox_read_index + i],
-                        blu
-                    );
-                }
-                sbox_read_index += 4;
-
-                round_key = next_round_key;
+                // // compute next round key
+                // let next_round_key = cols.next_round_key.populate(
+                //     blu,
+                //     &round_key,
+                //     event.sbox_read_records[sbox_read_index..sbox_read_index + 4]
+                //         .try_into()
+                //         .expect("Slice length must be exactly 4"),
+                //     round as u8,
+                // );
+                //
+                // // read the round key byte subs
+                // for i in 0..4 {
+                //     cols.roundkey_subs_bytes[i].populate(
+                //         event.sbox_read_records[sbox_read_index + i],
+                //         blu
+                //     );
+                // }
+                // sbox_read_index += 4;
+                //
+                // round_key = next_round_key;
             } else
             {
-                for i in sbox_read_index..(sbox_read_index + 16) {
-                    cols.sbox[i - sbox_read_index].populate(
-                        event.sbox_read_records[i],
-                        blu
-                    )
-                }
-                sbox_read_index += 16;
-                assert_eq!(sbox_read_index, 456);
+                // for i in sbox_read_index..(sbox_read_index + 16) {
+                //     cols.sbox[i - sbox_read_index].populate(
+                //         event.sbox_read_records[i],
+                //         blu
+                //     )
+                // }
+                // sbox_read_index += 16;
+                // assert_eq!(sbox_read_index, 456);
 
                 for i in 0..4 {
                     // check output

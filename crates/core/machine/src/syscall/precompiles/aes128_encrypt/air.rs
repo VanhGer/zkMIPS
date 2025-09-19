@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 use log::__private_api::loc;
-use p3_air::{Air, BaseAir};
+use p3_air::{Air, AirBuilder, BaseAir};
 use p3_field::FieldAlgebra;
 use p3_matrix::Matrix;
 use tempfile::Builder;
@@ -69,86 +69,141 @@ impl AES128EncryptChip {
             round = round + local.round[i] * AB::F::from_canonical_u32(i as u32);
         }
 
-        // if this is the first row, populate reading key
-        for i in 0..4 {
-            builder.eval_memory_access(
-                local.shard,
-                local.clk,
-                local.key_address + AB::F::from_canonical_u32((i * 4) as u32),
-                &local.key[i],
-                local.round[0],
-            );
-        }
+        // // if this is the first row, populate reading key
+        // for i in 0..4 {
+        //     builder.eval_memory_access(
+        //         local.shard,
+        //         local.clk,
+        //         local.key_address + AB::F::from_canonical_u32((i * 4) as u32),
+        //         &local.key[i],
+        //         local.round[0],
+        //     );
+        // }
+        //
+        // // if this is the first row, populate reading sbox_addr
+        // builder.eval_memory_access(
+        //     local.shard,
+        //     local.clk,
+        //     local.sbox_address,
+        //     &local.sbox_addr_read,
+        //     local.round[0],
+        // );
+        // // if this is the first row, populate reading input
+        // for i in 0..4 {
+        //     builder.eval_memory_access(
+        //         local.shard,
+        //         local.clk,
+        //         local.block_address + AB::F::from_canonical_u32((i * 4) as u32),
+        //         &local.block[i],
+        //         local.round[0],
+        //     );
+        // }
+        //
+        // // if this is the last row, populate writing output
+        // for i in 0..4 {
+        //     builder.eval_memory_access(
+        //         local.shard,
+        //         local.clk + AB::Expr::ONE,
+        //         local.block_address + AB::F::from_canonical_u32((i * 4) as u32),
+        //         &local.block[i],
+        //         local.round[10]
+        //     );
+        // }
 
-        // if this is the first row, populate reading sbox_addr
-        builder.eval_memory_access(
-            local.shard,
-            local.clk,
-            local.sbox_address,
-            &local.sbox_addr_read,
-            local.round[0],
-        );
+        // for i in 0..24 {
+        //     builder.eval_memory_access(
+        //         local.shard,
+        //         local.clk,
+        //         local.sbox_address
+        //             +  AB::F::from_canonical_u32(i as u32) * AB::F::from_canonical_u8(4),
+        //         &local.sbox[i],
+        //         local.round[0].clone()
+        //     );
+        // }
 
-        // if this is the first row, populate reading input
-        for i in 0..4 {
-            builder.eval_memory_access(
-                local.shard,
-                local.clk,
-                local.block_address + AB::F::from_canonical_u32((i * 4) as u32),
-                &local.block[i],
-                local.round[0],
-            );
-        }
-
-        // if this is the last row, populate writing output
-        for i in 0..4 {
-            builder.eval_memory_access(
-                local.shard,
-                local.clk + AB::Expr::ONE,
-                local.block_address + AB::F::from_canonical_u32((i * 4) as u32),
-                &local.block[i],
-                local.round[10]
-            );
-        }
-
-        let round_1to10 = local.round[10] + local.round_1to9;
+        // let round_1to10 = local.round[10] + local.round_1to9;
         // subs_bytes for state matrix
-        
-        for i in 0..AES_128_BLOCK_BYTES {
+
+        // builder.when(local.round[1]).assert_eq(
+        //     local.state_subs_bytes[0].access.diff_8bit_limb,
+        //     local.state_subs_bytes[1].access.diff_8bit_limb
+        // );
+
+
+        for i in 0..2 {
             let index = local.state_matrix[i];
+            // let index = AB::F::from_canonical_u8(0);
             builder.eval_memory_access(
                 local.shard,
                 local.clk,
                 local.sbox_address + index * AB::F::from_canonical_u8(4),
                 &local.state_subs_bytes[i],
-                round_1to10.clone(),
-            )
-        }
-        
-        // sbox elements
-        let round_0to9 = local.round_1to9 + local.round[0];
-        let start = round * AB::F::from_canonical_u32(24);
-        for i in 0..24 {
-            builder.eval_memory_access(
-                local.shard,
-                local.clk,
-                local.sbox_address 
-                    + (start.clone() + AB::F::from_canonical_u32(i as u32)) * AB::F::from_canonical_u8(4),
-                &local.sbox[i],
-                round_0to9.clone()
+                local.round[1].clone(),
             );
         }
-        for i in 0..16 {
-            builder.eval_memory_access(
-                local.shard,
-                local.clk,
-                local.sbox_address
-                    + (start.clone() + AB::F::from_canonical_u32(i as u32)) * AB::F::from_canonical_u8(4),
-                &local.sbox[i],
-                local.round[10].clone(),
-            );
-        }
-        
+        // builder.when(local.is_real).assert_eq(local.sbox_address, AB::F::from_canonical_u32(2130705192 as u32));
+
+
+
+        // builder.when(local.round[1]).assert_eq(
+        //     local.state_subs_bytes[0].access.value[0],
+        //     AB::F::from_canonical_u8(99)
+        // );
+        // builder.when(local.round[1]).assert_eq(
+        //     local.state_subs_bytes[0].access.value[1],
+        //     AB::F::from_canonical_u8(0)
+        // );
+        // builder.when(local.round[1]).assert_eq(
+        //     local.state_subs_bytes[0].access.value[2],
+        //     AB::F::from_canonical_u8(0)
+        // );
+        // builder.when(local.round[1]).assert_eq(
+        //     local.state_subs_bytes[0].access.value[3],
+        //     AB::F::from_canonical_u8(0)
+        // );
+
+        // let tmp = [127_u8, 254, 14, 149, 81, 165, 102, 53, 14, 52, 124, 71, 41, 41, 236, 203];
+        // for i in 0..16 {
+        //     builder.when(local.round[10]).assert_eq(
+        //         local.state_matrix[i],
+        //         AB::F::from_canonical_u8(tmp[i])
+        //     );
+        // }
+        // let tmp_after = [210_u8, 187, 171, 42, 209, 6, 51, 150, 171, 24, 16, 160, 165, 165, 206, 31];
+        // for i in 0..16 {
+        //     builder.when(local.round[10]).assert_eq(
+        //         local.state_subs_bytes[i].access.value[0],
+        //         AB::F::from_canonical_u8(tmp_after[i])
+        //     );
+        // }
+
+
+
+        //
+        // // sbox elements
+        // let round_0to9 = local.round_1to9 + local.round[0];
+        // let start = round * AB::F::from_canonical_u32(24);
+        // for i in 0..24 {
+        //     builder.eval_memory_access(
+        //         local.shard,
+        //         local.clk,
+        //         local.sbox_address
+        //             + (start.clone() + AB::F::from_canonical_u32(i as u32)) * AB::F::from_canonical_u8(4),
+        //         &local.sbox[i],
+        //         round_0to9.clone()
+        //     );
+        // }
+        // for i in 0..16 {
+        //     builder.eval_memory_access(
+        //         local.shard,
+        //         local.clk,
+        //         local.sbox_address
+        //             + (start.clone() + AB::F::from_canonical_u32(i as u32)) * AB::F::from_canonical_u8(4),
+        //         &local.sbox[i],
+        //         local.round[10].clone(),
+        //     );
+        // }
+
         // round key subs bytes
         // todo!()
     }
