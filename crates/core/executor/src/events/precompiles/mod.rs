@@ -1,3 +1,4 @@
+mod aes128;
 mod ec;
 mod edwards;
 mod fptower;
@@ -8,7 +9,6 @@ mod sha256_compress;
 mod sha256_extend;
 mod u256x2048_mul;
 mod uint256;
-mod aes128;
 
 use super::{MemoryLocalEvent, SyscallEvent};
 use crate::syscalls::SyscallCode;

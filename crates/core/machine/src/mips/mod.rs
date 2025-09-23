@@ -2,9 +2,9 @@ use crate::{
     global::GlobalChip,
     memory::{MemoryChipType, MemoryLocalChip, NUM_LOCAL_MEMORY_ENTRIES_PER_ROW},
     syscall::precompiles::{
+        aes128_encrypt::AES128EncryptChip,
         fptower::{Fp2AddSubAssignChip, Fp2MulAssignChip, FpOpChip},
         poseidon2::Poseidon2PermuteChip,
-        aes128_encrypt::AES128EncryptChip,
     },
 };
 use core::fmt;
@@ -274,7 +274,7 @@ impl<F: PrimeField32> MipsAir<F> {
         let poseidon2_permute = Chip::new(MipsAir::Poseidon2Permute(Poseidon2PermuteChip::new()));
         costs.insert(poseidon2_permute.name(), poseidon2_permute.cost());
         chips.push(poseidon2_permute);
-        
+
         let aes128_encrypt = Chip::new(MipsAir::Aes128Encrypt(AES128EncryptChip::new()));
         costs.insert(aes128_encrypt.name(), 11 * aes128_encrypt.cost());
         chips.push(aes128_encrypt);
