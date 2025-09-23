@@ -219,7 +219,7 @@ impl SplitOpts {
             keccak: 8 * deferred_split_threshold / 24,
             sha_extend: 32 * deferred_split_threshold / 48,
             sha_compress: 32 * deferred_split_threshold / 80,
-            aes128_encrypt: 8 * deferred_split_threshold / 11,
+            aes128_encrypt: 32 * deferred_split_threshold / 11,
             memory: 64 * deferred_split_threshold,
         }
     }
