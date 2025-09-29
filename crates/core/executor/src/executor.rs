@@ -1867,7 +1867,7 @@ impl<'a> Executor<'a> {
             }
         }
 
-        let done = self.state.pc == 0
+        let done = self.state.pc % 2130706433 == 0
             || self.state.exited
             || self.state.pc.wrapping_sub(self.program.pc_base)
                 >= (self.program.instructions.len() * 4) as u32;
@@ -2039,11 +2039,15 @@ impl<'a> Executor<'a> {
         let mut done = false;
         let mut current_shard = self.state.current_shard;
         let mut num_shards_executed = 0;
+        let mut inst = 0;
         loop {
+            inst += 1;
             if self.execute_cycle()? {
                 done = true;
+                log::info!("i: {} - pc: {}", inst, self.state.pc);
                 break;
             }
+            log::info!("i: {} - pc: {}", inst, self.state.pc);
 
             if self.shard_batch_size > 0 && current_shard != self.state.current_shard {
                 num_shards_executed += 1;

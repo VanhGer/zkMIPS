@@ -517,7 +517,9 @@ pub fn run_test_core<P: MachineProver<KoalaBearPoseidon2, MipsAir<KoalaBear>>>(
     let machine = MipsAir::machine(config);
     let prover = P::new(machine);
 
+    log::info!("Setup prover...");
     let (pk, _) = prover.setup(runtime.program.as_ref());
+    log::info!("Prove...");
     let (proof, output, _) = prove_with_context(
         &prover,
         &pk,
@@ -533,8 +535,9 @@ pub fn run_test_core<P: MachineProver<KoalaBearPoseidon2, MipsAir<KoalaBear>>>(
     let machine = MipsAir::machine(config);
     let (pk, vk) = machine.setup(runtime.program.as_ref());
     let mut challenger = machine.config().challenger();
+    log::info!("Verify core proof...");
     machine.verify(&vk, &proof, &mut challenger).unwrap();
-
+    log::info!("Proof verified!");
     Ok(proof)
 }
 

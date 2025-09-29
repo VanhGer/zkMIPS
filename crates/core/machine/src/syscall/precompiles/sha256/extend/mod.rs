@@ -57,7 +57,13 @@ pub mod extend_tests {
             Instruction::new(Opcode::ADD, 5, 0, 0, false, true),
             Instruction::new(Opcode::SYSCALL, 2, 4, 5, false, false),
         ]);
-        Program::new(instructions, 0, 0)
+        instructions.extend(vec![
+            Instruction::new(Opcode::ADD, 2, 0, SyscallCode::HALT as u32, false, true),
+            Instruction::new(Opcode::ADD, 4, 0, 0, false, true),
+            Instruction::new(Opcode::SYSCALL, 2, 4, 5, false, false),
+        ]);
+        Program::new(instructions, 2130706393, 2130706393) //2130706433 - 41
+        // Program::new(instructions, 0, 0)
     }
 
     #[test]
