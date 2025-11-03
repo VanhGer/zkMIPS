@@ -8,6 +8,7 @@ mod sha256_compress;
 mod sha256_extend;
 mod u256x2048_mul;
 mod uint256;
+mod xor3_128;
 
 use super::{MemoryLocalEvent, SyscallEvent};
 use crate::syscalls::SyscallCode;
@@ -24,6 +25,7 @@ pub use sha256_extend::*;
 use strum::{EnumIter, IntoEnumIterator};
 pub use u256x2048_mul::*;
 pub use uint256::*;
+pub use xor3_128::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize, EnumIter)]
 /// Precompile event.  There should be one variant for every precompile syscall.
@@ -34,6 +36,8 @@ pub enum PrecompileEvent {
     ShaCompress(ShaCompressEvent),
     /// Keccak sponge precompile event.
     KeccakSponge(KeccakSpongeEvent),
+    /// Xor3_128 precompile event.
+    Xor3_128(Xor3128Event),
     /// Edwards curve add precompile event.
     EdAdd(EllipticCurveAddEvent),
     /// Edwards curve decompress precompile event.
@@ -103,6 +107,9 @@ impl PrecompileLocalMemory for Vec<(SyscallEvent, PrecompileEvent)> {
                     iterators.push(e.local_mem_access.iter());
                 }
                 PrecompileEvent::KeccakSponge(e) => {
+                    iterators.push(e.local_mem_access.iter());
+                }
+                PrecompileEvent::Xor3_128(e) => {
                     iterators.push(e.local_mem_access.iter());
                 }
                 PrecompileEvent::EdDecompress(e) => {

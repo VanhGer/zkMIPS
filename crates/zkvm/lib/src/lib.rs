@@ -17,6 +17,7 @@ pub mod secp256r1;
 pub mod sha3;
 pub mod unconstrained;
 pub mod utils;
+pub mod xor3_128;
 #[cfg(feature = "verify")]
 pub mod verify;
 
@@ -78,6 +79,8 @@ extern "C" {
     /// Executes the Poseidon2 permutation
     pub fn syscall_poseidon2_permute(state: *mut [u32; 16]);
 
+    /// Executes the XOR of 3 128-bit values.
+    pub fn syscall_xor3_128(inputs: *mut [u8; 48], result: *mut [u8; 16]);
     /// Executes an uint256 multiplication on the given inputs.
     pub fn syscall_uint256_mulmod(x: *mut [u32; 8], y: *const [u32; 8]);
 

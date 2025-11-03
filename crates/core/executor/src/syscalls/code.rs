@@ -182,6 +182,9 @@ pub enum SyscallCode {
 
     SYS_LINUX = 4000, // not real syscall, used for represent all linux syscalls
 
+    /// Executes the `XOR3_128` precompile.
+    XOR3_128 = 0x00_01_00_31,
+
     UNIMPLEMENTED = 0xFF_FF_FF_FF,
 }
 
@@ -232,6 +235,7 @@ impl SyscallCode {
             0x00_01_00_2D => SyscallCode::SECP256R1_DOUBLE,
             0x00_01_00_2E => SyscallCode::SECP256R1_DECOMPRESS,
             0x01_01_00_2F => SyscallCode::U256XU2048_MUL,
+            0x00_01_00_31 => SyscallCode::XOR3_128,
             4000 => SyscallCode::SYS_LINUX,
             4003 => SyscallCode::SYS_READ,
             4004 => SyscallCode::SYS_WRITE,

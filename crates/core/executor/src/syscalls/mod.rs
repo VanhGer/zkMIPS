@@ -38,6 +38,7 @@ use precompiles::{
         add::WeierstrassAddAssignSyscall, decompress::WeierstrassDecompressSyscall,
         double::WeierstrassDoubleAssignSyscall,
     },
+    xor3_128::xor3::Xor3128Syscall,
 };
 
 use unconstrained::{EnterUnconstrainedSyscall, ExitUnconstrainedSyscall};
@@ -103,6 +104,8 @@ pub fn default_syscall_map() -> HashMap<SyscallCode, Arc<dyn Syscall>> {
     syscall_map.insert(SyscallCode::POSEIDON2_PERMUTE, Arc::new(Poseidon2PermuteSyscall));
 
     syscall_map.insert(SyscallCode::KECCAK_SPONGE, Arc::new(KeccakSpongeSyscall));
+
+    syscall_map.insert(SyscallCode::XOR3_128, Arc::new(Xor3128Syscall));
 
     syscall_map.insert(
         SyscallCode::SECP256K1_ADD,

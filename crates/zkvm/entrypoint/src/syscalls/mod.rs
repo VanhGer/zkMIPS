@@ -18,6 +18,7 @@ mod uint256_mul;
 mod unconstrained;
 #[cfg(feature = "verify")]
 mod verify;
+mod xor3_128;
 
 pub use bigint::*;
 pub use bls12381::*;
@@ -37,6 +38,7 @@ pub use sys::*;
 pub use u256x2048_mul::*;
 pub use uint256_mul::*;
 pub use unconstrained::*;
+pub use xor3_128::*;
 #[cfg(feature = "verify")]
 pub use verify::*;
 
@@ -162,3 +164,6 @@ pub const BN254_FP2_MUL: u32 = 0x01_01_00_2B;
 
 /// Executes the `POSEIDON2_PERMUTE` precompile.
 pub const POSEIDON2_PERMUTE: u32 = 0x00_01_00_30;
+
+// Executes the `XOR3_128` precompile.
+pub const XOR3_128: u32 = 0x00_01_00_31;

@@ -7,3 +7,4 @@ pub mod sys_linux;
 pub mod u256x2048_mul;
 pub mod uint256;
 pub mod weierstrass;
+pub mod xor3_128;
