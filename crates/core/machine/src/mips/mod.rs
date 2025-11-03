@@ -12,6 +12,7 @@ use itertools::Itertools;
 pub use mips_chips::*;
 use p3_field::PrimeField32;
 use strum_macros::{EnumDiscriminants, EnumIter};
+use tracing::info;
 use zkm_core_executor::events::PrecompileEvent;
 use zkm_core_executor::{
     events::PrecompileLocalMemory, syscalls::SyscallCode, ExecutionRecord, MipsAirId, Program,
@@ -21,6 +22,7 @@ use zkm_stark::{
     air::{LookupScope, MachineAir, ZKM_PROOF_NUM_PV_ELTS},
     Chip, LookupKind, StarkGenericConfig, StarkMachine,
 };
+use crate::syscall::precompiles::xor3128::Xor3128Chip;
 
 /// A module for importing all the different MIPS chips.
 pub(crate) mod mips_chips {
@@ -145,6 +147,8 @@ pub enum MipsAir<F: PrimeField32> {
     Poseidon2Permute(Poseidon2PermuteChip),
     /// A precompile for the Keccak Sponge
     KeccakSponge(KeccakSpongeChip),
+    /// A precompile for the XOR of 3 128-bit values.
+    Xor3128(Xor3128Chip),
     /// A precompile for addition on the Elliptic curve bn254.
     Bn254Add(WeierstrassAddAssignChip<SwCurve<Bn254Parameters>>),
     /// A precompile for doubling a point on the Elliptic curve bn254.
@@ -277,6 +281,10 @@ impl<F: PrimeField32> MipsAir<F> {
         let keccak_sponge = Chip::new(MipsAir::KeccakSponge(KeccakSpongeChip::new()));
         costs.insert(keccak_sponge.name(), 24 * keccak_sponge.cost());
         chips.push(keccak_sponge);
+
+        let xor3_128 = Chip::new(MipsAir::Xor3128(Xor3128Chip::new()));
+        costs.insert(xor3_128.name(), 24 * xor3_128.cost());
+        chips.push(xor3_128);
 
         let bn254_add_assign = Chip::new(MipsAir::Bn254Add(WeierstrassAddAssignChip::<
             SwCurve<Bn254Parameters>,
@@ -632,6 +640,7 @@ impl<F: PrimeField32> MipsAir<F> {
             Self::Bls12381Fp2AddSub(_) => SyscallCode::BLS12381_FP2_ADD,
             Self::Poseidon2Permute(_) => SyscallCode::POSEIDON2_PERMUTE,
             Self::KeccakSponge(_) => SyscallCode::KECCAK_SPONGE,
+            Self::Xor3128(_) => SyscallCode::XOR3_128,
             Self::SysLinux(_) => SyscallCode::SYS_LINUX,
             Self::Add(_) => unreachable!("Invalid for core chip"),
             Self::Bitwise(_) => unreachable!("Invalid for core chip"),

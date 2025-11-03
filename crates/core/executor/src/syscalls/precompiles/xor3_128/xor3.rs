@@ -19,24 +19,23 @@ impl Syscall for Xor3128Syscall {
         // read the 3 input blocks
         let (input_a_record, input_a_u32s) = ctx.mr_slice(input_addr, 4);
         input_read_records_vec.extend(input_a_record);
-        let a_bytes: [u8; 16] = words_to_bytes_le(&input_a_u32s);
+        let input_a: [u32; 4] = input_a_u32s.try_into().unwrap();
 
         let (input_b_record, input_b_u32s) = ctx.mr_slice(input_addr + 16, 4);
         input_read_records_vec.extend(input_b_record);
-        let b_bytes: [u8; 16] = words_to_bytes_le(&input_b_u32s);
+        let input_b: [u32; 4] = input_b_u32s.try_into().unwrap();
 
         let (input_c_record, input_c_u32s) = ctx.mr_slice(input_addr + 32, 4);
         input_read_records_vec.extend(input_c_record);
-        let c_bytes: [u8; 16] = words_to_bytes_le(&input_c_u32s);
+        let input_c: [u32; 4] = input_c_u32s.try_into().unwrap();
 
-        let mut result = [0u8; 16];
-        for i in 0..16 {
-            result[i] = a_bytes[i] ^ b_bytes[i] ^ c_bytes[i];
+        let mut result = [0u32; 4];
+        for i in 0..4 {
+            result[i] = input_a[i] ^ input_b[i] ^ input_c[i];
         }
-        let result_u32s: [u32; 4] = bytes_to_words_le(&result);
 
         // write the result
-        let result_write_records_vec = ctx.mw_slice(result_addr, &result_u32s);
+        let result_write_records_vec = ctx.mw_slice(result_addr, &result);
         let result_write_records: [MemoryWriteRecord; 4] = result_write_records_vec.try_into().unwrap();
         let input_read_records: [MemoryReadRecord; 12] = input_read_records_vec.try_into().unwrap();
         let shard = ctx.current_shard();
@@ -45,9 +44,9 @@ impl Syscall for Xor3128Syscall {
             clk: start_clk,
             input_addr,
             result_addr,
-            input_a: a_bytes,
-            input_b: b_bytes,
-            input_c: c_bytes,
+            input_a,
+            input_b,
+            input_c,
             result,
             input_read_records,
             result_write_records,
@@ -61,7 +60,7 @@ impl Syscall for Xor3128Syscall {
             arg1,
             arg2,
         );
-        ctx.add_precompile_event(syscall_code, syscall_event, PrecompileEvent::Xor3_128(event));
+        ctx.add_precompile_event(syscall_code, syscall_event, PrecompileEvent::Xor3128(event));
         None
     }
 }

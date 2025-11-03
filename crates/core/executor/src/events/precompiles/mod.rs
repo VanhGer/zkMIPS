@@ -37,7 +37,7 @@ pub enum PrecompileEvent {
     /// Keccak sponge precompile event.
     KeccakSponge(KeccakSpongeEvent),
     /// Xor3_128 precompile event.
-    Xor3_128(Xor3128Event),
+    Xor3128(Xor3128Event),
     /// Edwards curve add precompile event.
     EdAdd(EllipticCurveAddEvent),
     /// Edwards curve decompress precompile event.
@@ -109,7 +109,7 @@ impl PrecompileLocalMemory for Vec<(SyscallEvent, PrecompileEvent)> {
                 PrecompileEvent::KeccakSponge(e) => {
                     iterators.push(e.local_mem_access.iter());
                 }
-                PrecompileEvent::Xor3_128(e) => {
+                PrecompileEvent::Xor3128(e) => {
                     iterators.push(e.local_mem_access.iter());
                 }
                 PrecompileEvent::EdDecompress(e) => {

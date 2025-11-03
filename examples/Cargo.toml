@@ -40,6 +40,8 @@ members = [
   "large-sum/guest",
   "large-sum/host",
   "simple-go/host",
+  "xor3128/guest",
+  "xor3128/host",
 ]
 resolver = "2"
 

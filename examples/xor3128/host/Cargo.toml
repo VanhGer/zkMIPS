@@ -1,0 +1,18 @@
+[package]
+name = "xor3128-host"
+version = { workspace = true }
+edition = { workspace = true }
+default-run = "xor3128-host"
+publish = false
+
+[dependencies]
+zkm-sdk = { workspace = true }
+log = "0.4.22"
+rand = "0.9.2"
+
+[build-dependencies]
+zkm-build = { workspace = true }
+
+[[bin]]
+name = "xor3128-host"
+path = "src/main.rs"

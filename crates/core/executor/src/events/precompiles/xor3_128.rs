@@ -15,13 +15,13 @@ pub struct Xor3128Event {
     /// The address of the result
     pub result_addr: u32,
     /// The first input values as a list of byte
-    pub input_a: [u8; 16],
+    pub input_a: [u32; 4],
     /// The second input values as a list of byte
-    pub input_b: [u8; 16],
+    pub input_b: [u32; 4],
     /// The third input values as a list of byte
-    pub input_c: [u8; 16],
+    pub input_c: [u32; 4],
     /// The result as a list of byte
-    pub result: [u8; 16],
+    pub result: [u32; 4],
     /// The memory records for the input
     pub input_read_records: [MemoryReadRecord; XOR3_128_INPUT_U32S_LEN],
     /// The memory records for the result
