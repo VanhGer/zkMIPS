@@ -1,4 +1,3 @@
-use zkm_primitives::consts::{bytes_to_words_le, words_to_bytes_le};
 use crate::events::{MemoryReadRecord, MemoryWriteRecord, PrecompileEvent, Xor3128Event};
 use crate::syscalls::{Syscall, SyscallCode, SyscallContext};
 pub(crate) struct Xor3128Syscall;

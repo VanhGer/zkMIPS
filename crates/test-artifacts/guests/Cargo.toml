@@ -45,6 +45,7 @@ members = [
     "u256x2048-mul",
     "unconstrained",
     "max_memory",
+    "xor3128",
 ]
 resolver = "2"
 
