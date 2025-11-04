@@ -282,7 +282,7 @@ impl<F: PrimeField32> MipsAir<F> {
         chips.push(keccak_sponge);
 
         let xor3_128 = Chip::new(MipsAir::Xor3128(Xor3128Chip::new()));
-        costs.insert(xor3_128.name(), 24 * xor3_128.cost());
+        costs.insert(xor3_128.name(), xor3_128.cost());
         chips.push(xor3_128);
 
         let bn254_add_assign = Chip::new(MipsAir::Bn254Add(WeierstrassAddAssignChip::<
