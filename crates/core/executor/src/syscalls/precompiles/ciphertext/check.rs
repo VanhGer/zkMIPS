@@ -19,13 +19,13 @@ impl Syscall for CiphertextCheckSyscall {
         // for each gate info
         let mut gate_info_ptr = input_ptr + 4;
         for i in 0..num_gates_u32 {
-            let (h1_read_records, h1_u32s) = ctx.mr_slice(gate_info_ptr, 4);
-            gate_read_records.extend_from_slice(&h1_read_records);
-            gates_info.extend_from_slice(&h1_u32s);
-
-            let (h0_read_records, h0_u32s) = ctx.mr_slice(gate_info_ptr + 16, 4);
+            let (h0_read_records, h0_u32s) = ctx.mr_slice(gate_info_ptr, 4);
             gate_read_records.extend_from_slice(&h0_read_records);
             gates_info.extend_from_slice(&h0_u32s);
+
+            let (h1_read_records, h1_u32s) = ctx.mr_slice(gate_info_ptr + 16, 4);
+            gate_read_records.extend_from_slice(&h1_read_records);
+            gates_info.extend_from_slice(&h1_u32s);
 
             let (label_b_read_records, label_b_u32s) = ctx.mr_slice(gate_info_ptr + 32, 4);
             gate_read_records.extend_from_slice(&label_b_read_records);

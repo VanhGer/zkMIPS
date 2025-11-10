@@ -9,14 +9,14 @@ use core::arch::asm;
 /// a four byte boundary.
 #[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn syscall_ciphertext_check(inputs: *mut [u8; 48], result: *mut u32) {
+pub extern "C" fn syscall_ciphertext_check(input: *const u8, output: *mut u32) {
     #[cfg(target_os = "zkvm")]
     unsafe {
         asm!(
         "syscall",
         in("$2") crate::syscalls::CIPHERTEXT_CHECK,
-        in("$4") inputs,
-        in("$5") result,
+        in("$4") input,
+        in("$5") output,
         );
     }
 

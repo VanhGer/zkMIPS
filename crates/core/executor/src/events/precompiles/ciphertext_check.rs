@@ -33,3 +33,9 @@ pub struct CiphertextCheckEvent {
     /// The local memory access records.
     pub local_mem_access: Vec<MemoryLocalEvent>,
 }
+
+impl CiphertextCheckEvent {
+    pub fn num_gates(&self) -> usize {
+        self.num_gates as usize
+    }
+}
