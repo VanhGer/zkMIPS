@@ -1,3 +1,4 @@
+pub mod ciphertext;
 pub mod edwards;
 pub mod fptower;
 pub mod keccak_sponge;

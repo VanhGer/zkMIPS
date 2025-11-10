@@ -39,6 +39,7 @@ pub(crate) mod mips_chips {
             chip::SyscallChip,
             instructions::SyscallInstrsChip,
             precompiles::{
+                ciphertext::CiphertextCheckChip,
                 edwards::{EdAddAssignChip, EdDecompressChip},
                 keccak_sponge::KeccakSpongeChip,
                 sha256::{ShaCompressChip, ShaExtendChip},
@@ -143,6 +144,8 @@ pub enum MipsAir<F: PrimeField32> {
     Secp256r1Double(WeierstrassDoubleAssignChip<SwCurve<Secp256r1Parameters>>),
     /// A precompile for the Poseidon2 permutation
     Poseidon2Permute(Poseidon2PermuteChip),
+    /// A precompile for the Ciphertext Check
+    CiphertextCheck(CiphertextCheckChip),
     /// A precompile for the Keccak Sponge
     KeccakSponge(KeccakSpongeChip),
     /// A precompile for addition on the Elliptic curve bn254.
@@ -277,6 +280,10 @@ impl<F: PrimeField32> MipsAir<F> {
         let keccak_sponge = Chip::new(MipsAir::KeccakSponge(KeccakSpongeChip::new()));
         costs.insert(keccak_sponge.name(), 24 * keccak_sponge.cost());
         chips.push(keccak_sponge);
+
+        let ciphertext_check = Chip::new(MipsAir::<F>::CiphertextCheck(CiphertextCheckChip::new()));
+        costs.insert(ciphertext_check.name(), ciphertext_check.cost());
+        chips.push(ciphertext_check);
 
         let bn254_add_assign = Chip::new(MipsAir::Bn254Add(WeierstrassAddAssignChip::<
             SwCurve<Bn254Parameters>,
@@ -489,6 +496,7 @@ impl<F: PrimeField32> MipsAir<F> {
             .map(|events| {
                 let events_len = match self {
                     Self::KeccakSponge(_) => self.keccak_permutation_in_record(record),
+                    Self::CiphertextCheck(_) => self.ciphertext_check_in_record(record),
                     _ => events.len(),
                 };
                 let num_rows = events_len * self.rows_per_event();
@@ -605,6 +613,25 @@ impl<F: PrimeField32> MipsAir<F> {
             .unwrap_or(0)
     }
 
+    fn ciphertext_check_in_record(&self, record: &ExecutionRecord) -> usize {
+        record
+            .precompile_events
+            .get_events(SyscallCode::CIPHERTEXT_CHECK)
+            .map(|events| {
+                events
+                    .iter()
+                    .map(|(_, pre_e)| {
+                        if let PrecompileEvent::CiphertextCheck(event) = pre_e {
+                            event.num_gates()
+                        } else {
+                            unreachable!()
+                        }
+                    })
+                    .sum::<usize>()
+            })
+            .unwrap_or(0)
+    }
+
     pub(crate) fn syscall_code(&self) -> SyscallCode {
         match self {
             Self::Bls12381Add(_) => SyscallCode::BLS12381_ADD,
@@ -631,6 +658,7 @@ impl<F: PrimeField32> MipsAir<F> {
             Self::Bls12381Fp2Mul(_) => SyscallCode::BLS12381_FP2_MUL,
             Self::Bls12381Fp2AddSub(_) => SyscallCode::BLS12381_FP2_ADD,
             Self::Poseidon2Permute(_) => SyscallCode::POSEIDON2_PERMUTE,
+            Self::CiphertextCheck(_) => SyscallCode::CIPHERTEXT_CHECK,
             Self::KeccakSponge(_) => SyscallCode::KECCAK_SPONGE,
             Self::SysLinux(_) => SyscallCode::SYS_LINUX,
             Self::Add(_) => unreachable!("Invalid for core chip"),
