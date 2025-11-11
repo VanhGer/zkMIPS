@@ -36,12 +36,38 @@ where
             LookupScope::Local,
         );
 
+        self.eval_flags(builder, local);
+        self.eval_memory_access(builder, local);
+        self.eval_logic_check(builder, local, next);
+        self.eval_transition(builder, local, next);
+    }
+}
+
+impl CiphertextCheckChip {
+    fn eval_flags<AB: ZKMAirBuilder>(
+        &self,
+        builder: &mut AB,
+        local: &CiphertextCheckCols<AB::Var>,
+    ) {
+        builder.assert_bool(local.is_real);
+        builder.assert_bool(local.is_first_gate);
+        builder.assert_bool(local.is_last_gate);
+        builder.assert_bool(local.not_last_gate);
+        builder.assert_zero(local.is_last_gate * local.not_last_gate);
+        builder.assert_zero(local.is_last_gate * local.is_first_gate);
+    }
+
+    fn eval_memory_access<AB: ZKMAirBuilder>(
+        &self,
+        builder: &mut AB,
+        local: &CiphertextCheckCols<AB::Var>,
+    ) {
         // eval gate number read
         builder.eval_memory_access(
             local.shard,
             local.clk,
             local.input_address - AB::F::from_canonical_u32(4), // adjust for num_gates u32,
-            &local.num_gate_mem,
+            &local.gates_num_mem,
             local.is_first_gate
         );
 
@@ -51,7 +77,7 @@ where
                 local.shard,
                 local.clk,
                 local.input_address + AB::F::from_canonical_u32((i as u32) * 4),
-                &local.gate_input_mem[i],
+                &local.gates_input_mem[i],
                 local.is_real,
             );
         }
@@ -63,7 +89,14 @@ where
             &local.result_mem,
             local.is_last_gate,
         );
+    }
 
+    fn eval_logic_check<AB: ZKMAirBuilder>(
+        &self,
+        builder: &mut AB,
+        local: &CiphertextCheckCols<AB::Var>,
+        next: &CiphertextCheckCols<AB::Var>,
+    ) {
         // eval XOR operations
         for i in 0..4 {
             let h0_id = i;
@@ -72,8 +105,8 @@ where
 
             XorOperation::<AB::F>::eval(
                 builder,
-                local.gate_input_mem[h0_id].access.value,
-                local.gate_input_mem[h1_id].access.value,
+                local.gates_input_mem[h0_id].access.value,
+                local.gates_input_mem[h1_id].access.value,
                 local.inter1[i],
                 local.is_real,
             );
@@ -81,7 +114,7 @@ where
             XorOperation::<AB::F>::eval(
                 builder,
                 local.inter1[i].value,
-                local.gate_input_mem[label_b_id].access.value,
+                local.gates_input_mem[label_b_id].access.value,
                 local.inter2[i],
                 local.is_real,
             );
@@ -93,7 +126,7 @@ where
             IsEqualWordOperation::<AB::F>::eval(
                 builder,
                 local.inter2[i].value.map(|x| x.into()),
-                local.gate_input_mem[expected_id].access.value.map(|x| x.into()),
+                local.gates_input_mem[expected_id].access.value.map(|x| x.into()),
                 local.is_equal_words[i],
                 local.is_real.into()
             );
@@ -114,6 +147,28 @@ where
             next.checks[3],
             local.checks[3] * next.checks[2]
         );
+    }
 
+    fn eval_transition<AB: AirBuilder>(
+        &self,
+        builder: &mut AB,
+        local: &CiphertextCheckCols<AB::Var>,
+        next: &CiphertextCheckCols<AB::Var>,
+    ) {
+        let bytes_shift = AB::F::from_canonical_u32(256);
+        let num_gates = local.gates_num_mem.access.value.0[0]
+        + local.gates_num_mem.access.value.0[1] * bytes_shift
+        + local.gates_num_mem.access.value.0[2] * bytes_shift * bytes_shift
+        + local.gates_num_mem.access.value.0[3] * bytes_shift * bytes_shift * bytes_shift;
+
+        builder.when(local.is_first_gate).assert_zero(local.gate_id);
+        builder.when(local.is_first_gate).assert_eq(local.gates_num, num_gates);
+        builder.when(local.is_last_gate).assert_eq(local.gates_num - AB::F::ONE, local.gate_id);
+        builder.when(local.not_last_gate).assert_eq(local.gate_id + AB::F::ONE, next.gate_id);
+
+        builder.when(local.not_last_gate).assert_eq(
+            local.input_address + AB::F::from_canonical_u32(64),
+            next.input_address
+        );
     }
 }
