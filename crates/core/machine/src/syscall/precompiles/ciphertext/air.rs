@@ -1,12 +1,13 @@
 use std::borrow::Borrow;
-use p3_air::{Air, BaseAir};
+use log::__private_api::loc;
+use p3_air::{Air, AirBuilder, BaseAir};
 use p3_field::FieldAlgebra;
 use p3_matrix::Matrix;
 use zkm_core_executor::syscalls::SyscallCode;
 use zkm_stark::{LookupScope, ZKMAirBuilder};
 use crate::air::{MemoryAirBuilder, WordAirBuilder};
 use crate::CiphertextCheckChip;
-use crate::operations::XorOperation;
+use crate::operations::{IsEqualWordOperation, IsZeroWordOperation, XorOperation};
 use crate::syscall::precompiles::ciphertext::columns::{CiphertextCheckCols, NUM_CIPHERTEXT_CHECK_COLS};
 
 impl<F> BaseAir<F> for CiphertextCheckChip {
@@ -87,13 +88,32 @@ where
         }
 
         // eval check
-        // let mut check = AB::F::ONE;
-        // for i in 0..4 {
-        //     let expected_ciphertext_id = 12 + i;
-        //     builder.when(local.is_real).assert_word_eq(
-        //         local.gate_input_mem[expected_ciphertext_id].access.value,
-        //         local.inter2[i].value,
-        //     )
-        // }
+        for i in 0..4 {
+            let expected_id = 12 + i;
+            IsEqualWordOperation::<AB::F>::eval(
+                builder,
+                local.inter2[i].value.map(|x| x.into()),
+                local.gate_input_mem[expected_id].access.value.map(|x| x.into()),
+                local.is_equal_words[i],
+                local.is_real.into()
+            );
+        }
+        builder.when(local.is_real).assert_eq(
+            local.checks[0],
+            local.is_equal_words[0].is_diff_zero.result * local.is_equal_words[1].is_diff_zero.result,
+        );
+        builder.when(local.is_real).assert_eq(
+            local.checks[1],
+            local.is_equal_words[2].is_diff_zero.result * local.checks[0],
+        );
+        builder.when(local.is_real).assert_eq(
+            local.checks[2],
+            local.is_equal_words[3].is_diff_zero.result * local.checks[1],
+        );
+        builder.when(local.not_last_gate).assert_eq(
+            next.checks[3],
+            local.checks[3] * next.checks[2]
+        );
+
     }
 }

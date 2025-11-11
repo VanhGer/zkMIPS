@@ -97,12 +97,14 @@ impl CiphertextCheckChip {
         let mut rows = Vec::new();
 
         let mut input_address = event.input_addr + 4; // skip num_gates u32
+        let mut pre_check = true;
         for gate_id in 0..num_gate {
             let mut row = [F::ZERO; NUM_CIPHERTEXT_CHECK_COLS];
             let cols: &mut CiphertextCheckCols<F> = row.as_mut_slice().borrow_mut();
             cols.shard = F::from_canonical_u32(event.shard);
             cols.clk = F::from_canonical_u32(event.clk);
             cols.is_real = F::ONE;
+            cols.not_last_gate = F::from_bool(gate_id != num_gate - 1);
             cols.receive_syscall = F::from_bool(gate_id == 0);
             cols.input_address = F::from_canonical_u32(input_address);
             cols.output_address = F::from_canonical_u32(event.output_addr);
@@ -121,7 +123,7 @@ impl CiphertextCheckChip {
             }
 
             // XOR computation
-            let mut check = true;
+            let mut check_u32s = [0u32; 4];
             for i in 0..4 {
                 let h0_id = gate_id * 16 + i;
                 let h1_id = gate_id * 16 + 4 + i;
@@ -130,9 +132,21 @@ impl CiphertextCheckChip {
 
                 let inter1 = cols.inter1[i].populate(blu, event.gates_info[h0_id], event.gates_info[h1_id]);
                 let inter2 = cols.inter2[i].populate(blu, inter1, event.gates_info[label_b_id]);
-
-                check = check && (inter2 == event.gates_info[expected_id]);
+                if i == 0 {
+                    check_u32s[i] = cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
+                } else  {
+                    check_u32s[i] = check_u32s[i - 1] * cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
+                }
+                
             }
+            // populate check results
+            cols.checks[0] = F::from_canonical_u32(check_u32s[1]);
+            cols.checks[1] = F::from_canonical_u32(check_u32s[2]);
+            cols.checks[2] = F::from_canonical_u32(check_u32s[3]);
+            cols.checks[3] = F::from_canonical_u32(check_u32s[3] * (pre_check as u32));
+            pre_check = pre_check && (check_u32s[3] == 1);
+            
+            
             // // do check
             // cols.check = F::from_bool(check);
             // assert_eq!(check as u32, event.output);
