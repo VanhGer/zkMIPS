@@ -16,9 +16,10 @@ pub struct CiphertextCheckCols<T> {
     pub is_first_gate: T,
     pub is_last_gate: T,
     pub not_last_gate: T,
-    pub gates_id: T,
-    pub gate_input_mem: [MemoryReadCols<T>; 16],
-    pub num_gate_mem: MemoryReadCols<T>,
+    pub gate_id: T,
+    pub gates_num: T,
+    pub gates_input_mem: [MemoryReadCols<T>; 16],
+    pub gates_num_mem: MemoryReadCols<T>,
     pub result_mem: MemoryWriteCols<T>,
     pub inter1: [XorOperation<T>; 4], // h1 ^ h0
     pub inter2: [XorOperation<T>; 4], // h1 ^ h0 ^ label_b

@@ -93,33 +93,34 @@ impl CiphertextCheckChip {
         event: &CiphertextCheckEvent,
         blu: &mut impl ByteRecord,
     ) -> Vec<[F; NUM_CIPHERTEXT_CHECK_COLS]> {
-        let num_gate = event.num_gates();
+        let gates_num = event.num_gates();
         let mut rows = Vec::new();
 
         let mut input_address = event.input_addr + 4; // skip num_gates u32
         let mut pre_check = true;
-        for gate_id in 0..num_gate {
+        for gate_id in 0..gates_num {
             let mut row = [F::ZERO; NUM_CIPHERTEXT_CHECK_COLS];
             let cols: &mut CiphertextCheckCols<F> = row.as_mut_slice().borrow_mut();
             cols.shard = F::from_canonical_u32(event.shard);
             cols.clk = F::from_canonical_u32(event.clk);
             cols.is_real = F::ONE;
-            cols.not_last_gate = F::from_bool(gate_id != num_gate - 1);
             cols.receive_syscall = F::from_bool(gate_id == 0);
             cols.input_address = F::from_canonical_u32(input_address);
             cols.output_address = F::from_canonical_u32(event.output_addr);
             cols.is_first_gate = F::from_bool(gate_id == 0);
-            cols.is_last_gate = F::from_bool(gate_id == num_gate - 1);
-            cols.gates_id = F::from_canonical_u32(gate_id as u32);
+            cols.is_last_gate = F::from_bool(gate_id == gates_num - 1);
+            cols.not_last_gate = F::from_bool(gate_id != gates_num - 1);
+            cols.gate_id = F::from_canonical_u32(gate_id as u32);
+            cols.gates_num = F::from_canonical_u32(gates_num as u32);
 
             if gate_id == 0 {
                 // read number of gates
-                cols.num_gate_mem.populate(event.num_gates_read_record, blu);
+                cols.gates_num_mem.populate(event.num_gates_read_record, blu);
             }
 
             // read gate info
             for i in 0..16 {
-                cols.gate_input_mem[i].populate(event.gates_read_records[gate_id * 16 + i], blu);
+                cols.gates_input_mem[i].populate(event.gates_read_records[gate_id * 16 + i], blu);
             }
 
             // XOR computation
@@ -137,7 +138,7 @@ impl CiphertextCheckChip {
                 } else  {
                     check_u32s[i] = check_u32s[i - 1] * cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
                 }
-                
+
             }
             // populate check results
             cols.checks[0] = F::from_canonical_u32(check_u32s[1]);
@@ -145,14 +146,9 @@ impl CiphertextCheckChip {
             cols.checks[2] = F::from_canonical_u32(check_u32s[3]);
             cols.checks[3] = F::from_canonical_u32(check_u32s[3] * (pre_check as u32));
             pre_check = pre_check && (check_u32s[3] == 1);
-            
-            
-            // // do check
-            // cols.check = F::from_bool(check);
-            // assert_eq!(check as u32, event.output);
 
             // if this is the last gate, write result
-            if gate_id == num_gate - 1 {
+            if gate_id == gates_num - 1 {
                 cols.result_mem.populate(event.output_write_record, blu);
             }
 
