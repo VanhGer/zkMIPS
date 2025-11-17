@@ -17,7 +17,7 @@
         "Branch": 11,
         "Jump": 7,
         "AddSub": 13,
-        "CloClz": 0,
+        "CloClz": 2,
         "SyscallCore": 5
       }
     },
@@ -37,7 +37,7 @@
         "Branch": 14,
         "Jump": 5,
         "AddSub": 16,
-        "CloClz": 0,
+        "CloClz": 2,
         "SyscallCore": 2
       }
     },
@@ -298,7 +298,7 @@
         "Branch": 14,
         "Jump": 12,
         "AddSub": 17,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 6
       }
     },
@@ -340,7 +340,7 @@
         "Branch": 14,
         "Jump": 12,
         "AddSub": 16,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 5
       }
     },
@@ -421,7 +421,7 @@
         "Branch": 14,
         "Jump": 12,
         "AddSub": 17,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 7
       }
     },
@@ -917,7 +917,7 @@
         "MemoryInstrs": 15,
         "AddSub": 16,
         "Lt": 16,
-        "CloClz": 0,
+        "CloClz": 2,
         "ShiftLeft": 14
       }
     },
@@ -3153,7 +3153,7 @@
         "Branch": 12,
         "Jump": 13,
         "AddSub": 17,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 11
       }
     },
@@ -10572,7 +10572,7 @@
         "Branch": 14,
         "Jump": 12,
         "AddSub": 17,
-        "CloClz": 1
+        "CloClz": 2
       }
     },
     {
@@ -11718,7 +11718,7 @@
         "Branch": 13,
         "Jump": 10,
         "AddSub": 17,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 0
       }
     },
@@ -13461,7 +13461,7 @@
         "Branch": 11,
         "Jump": 7,
         "AddSub": 13,
-        "CloClz": 0,
+        "CloClz": 2,
         "SyscallCore": 5
       }
     },
@@ -13619,7 +13619,7 @@
         "Branch": 15,
         "Jump": 5,
         "AddSub": 17,
-        "CloClz": 0,
+        "CloClz": 2,
         "SyscallCore": 2
       }
     },
@@ -13699,7 +13699,7 @@
         "Branch": 15,
         "Jump": 13,
         "AddSub": 17,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 5
       }
     },
@@ -14229,7 +14229,7 @@
         "MemoryInstrs": 16,
         "AddSub": 17,
         "Lt": 17,
-        "CloClz": 0,
+        "CloClz": 2,
         "ShiftLeft": 15
       }
     },
@@ -18962,7 +18962,7 @@
         "Branch": 15,
         "Jump": 14,
         "AddSub": 18,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 12
       }
     },
@@ -22657,7 +22657,7 @@
         "Branch": 16,
         "Jump": 5,
         "AddSub": 18,
-        "CloClz": 0,
+        "CloClz": 2,
         "SyscallCore": 2
       }
     },
@@ -22814,7 +22814,7 @@
         "Branch": 16,
         "Jump": 14,
         "AddSub": 18,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 6
       }
     },
@@ -22836,7 +22836,7 @@
         "Branch": 16,
         "Jump": 14,
         "AddSub": 18,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 8
       }
     },
@@ -22898,7 +22898,7 @@
         "Branch": 16,
         "Jump": 14,
         "AddSub": 19,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 8
       }
     },
@@ -25709,7 +25709,7 @@
         "Branch": 14,
         "Jump": 15,
         "AddSub": 19,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 13
       }
     },
@@ -30131,7 +30131,7 @@
         "Branch": 17,
         "Jump": 7,
         "AddSub": 19,
-        "CloClz": 0,
+        "CloClz": 2,
         "SyscallCore": 5
       }
     },
@@ -30254,7 +30254,7 @@
         "Branch": 17,
         "Jump": 15,
         "AddSub": 19,
-        "CloClz": 1,
+        "CloClz": 2,
         "SyscallCore": 8
       }
     },
@@ -32815,7 +32815,7 @@
         "Branch": 16,
         "Jump": 16,
         "AddSub": 20,
-        "CloClz": 0
+        "CloClz": 2
       }
     },
     {
@@ -35519,7 +35519,7 @@
         "Branch": 17,
         "Jump": 7,
         "AddSub": 19,
-        "CloClz": 0,
+        "CloClz": 2,
         "SyscallCore": 5
       }
     },
@@ -35578,7 +35578,7 @@
         "Branch": 18,
         "Jump": 5,
         "AddSub": 20,
-        "CloClz": 0,
+        "CloClz": 2,
         "SyscallCore": 2
       }
     },
@@ -39582,7 +39582,7 @@
         "Branch": 17,
         "Jump": 7,
         "AddSub": 19,
-        "CloClz": 0,
+        "CloClz": 10,
         "SyscallCore": 5
       }
     },
@@ -39662,7 +39662,7 @@
         "Branch": 19,
         "Jump": 5,
         "AddSub": 21,
-        "CloClz": 0,
+        "CloClz": 10,
         "SyscallCore": 2
       }
     },
