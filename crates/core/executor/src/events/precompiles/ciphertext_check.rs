@@ -20,12 +20,16 @@ pub struct CiphertextCheckEvent {
     pub output_addr: u32,
     /// The number of gates
     pub num_gates: u32,
+    /// Delta:
+    pub delta: [u32; 4],
     /// Gates info
     pub gates_info: Vec<u32>,
     /// The output
     pub output: u32,
     /// The memory record for the number of gates
     pub num_gates_read_record: MemoryReadRecord,
+    /// The memory read record for delta
+    pub delta_read_records: [MemoryReadRecord; 4],
     /// The memory records for the gates info
     pub gates_read_records: Vec<MemoryReadRecord>,
     /// The memory records for the output
