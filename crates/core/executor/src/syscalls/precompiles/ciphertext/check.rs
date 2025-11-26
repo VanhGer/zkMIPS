@@ -16,22 +16,29 @@ impl Syscall for CiphertextCheckSyscall {
         // read number of gates
         let (num_gates_read_record, num_gates_u32) = ctx.mr(input_ptr);
 
+        let (delta_read_records, delta_u32s) = ctx.mr_slice(input_ptr + 4, 4);
+        let delta: [u32; 4] = delta_u32s.try_into().unwrap();
+
         // for each gate info
-        let mut gate_info_ptr = input_ptr + 4;
+        let mut gate_info_ptr = input_ptr + 20;
         for i in 0..num_gates_u32 {
-            let (h0_read_records, h0_u32s) = ctx.mr_slice(gate_info_ptr, 4);
+            let (gate_type_record, gate_type_u32) = ctx.mr(gate_info_ptr);
+            gate_read_records.push(gate_type_record);
+            gates_info.push(gate_type_u32);
+
+            let (h0_read_records, h0_u32s) = ctx.mr_slice(gate_info_ptr + 4, 4);
             gate_read_records.extend_from_slice(&h0_read_records);
             gates_info.extend_from_slice(&h0_u32s);
 
-            let (h1_read_records, h1_u32s) = ctx.mr_slice(gate_info_ptr + 16, 4);
+            let (h1_read_records, h1_u32s) = ctx.mr_slice(gate_info_ptr + 20, 4);
             gate_read_records.extend_from_slice(&h1_read_records);
             gates_info.extend_from_slice(&h1_u32s);
 
-            let (label_b_read_records, label_b_u32s) = ctx.mr_slice(gate_info_ptr + 32, 4);
+            let (label_b_read_records, label_b_u32s) = ctx.mr_slice(gate_info_ptr + 36, 4);
             gate_read_records.extend_from_slice(&label_b_read_records);
             gates_info.extend_from_slice(&label_b_u32s);
 
-            let (expected_ciphertext, expected_ciphertext_u32s) = ctx.mr_slice(gate_info_ptr + 48, 4);
+            let (expected_ciphertext, expected_ciphertext_u32s) = ctx.mr_slice(gate_info_ptr + 52, 4);
             gate_read_records.extend_from_slice(&expected_ciphertext);
             gates_info.extend_from_slice(&expected_ciphertext_u32s);
 
@@ -41,12 +48,21 @@ impl Syscall for CiphertextCheckSyscall {
             let label_b: [u32; 4] = label_b_u32s.try_into().unwrap();
             let expected_ciphertext: [u32; 4] = expected_ciphertext_u32s.try_into().unwrap();
 
-            let computed_ciphertext = h0.iter().zip(h1.iter().zip(label_b.iter())).map(|(&h0_i, (&h1_i, &label_b_i))| {
-                h0_i ^ h1_i ^ label_b_i
+            let computed_ciphertext = h0.iter().zip(h1.iter().zip(label_b.iter().zip(delta.iter())))
+                .map(|(&h0_i, (&h1_i, (&label_b_i, &delta_i)))| {
+                if gate_type_u32 == 0 {
+                    // AND gate
+                    h0_i ^ h1_i ^ label_b_i
+                } else {
+                    // OR gate
+                    h0_i ^ h1_i ^ label_b_i ^ delta_i
+                }
             }).collect::<Vec<u32>>();
+
+
             let checked = computed_ciphertext.as_slice() == expected_ciphertext.as_slice();
             result = result && checked;
-            gate_info_ptr += 64;
+            gate_info_ptr += 68;
         }
 
         // write result to output
@@ -58,9 +74,11 @@ impl Syscall for CiphertextCheckSyscall {
             input_addr: input_ptr,
             output_addr: output_ptr,
             num_gates: num_gates_u32,
+            delta,
             gates_info: gates_info.clone(),
             output: result as u32,
             num_gates_read_record,
+            delta_read_records: delta_read_records.try_into().unwrap(),
             gates_read_records: gate_read_records,
             output_write_record: write_record,
             local_mem_access: ctx.postprocess(),

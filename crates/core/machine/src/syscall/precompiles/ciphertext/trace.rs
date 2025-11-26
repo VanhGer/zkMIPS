@@ -96,15 +96,47 @@ impl CiphertextCheckChip {
         let gates_num = event.num_gates();
         let mut rows = Vec::new();
 
-        let mut input_address = event.input_addr + 4; // skip num_gates u32
+        let mut input_address = event.input_addr;
         let mut pre_check = true;
+
+        // first row to read gates_num and delta
+        // gates_num: gate_input_mem[0]
+        // delta: gate_input_mem[1..5]
+        {
+            let mut row = [F::ZERO; NUM_CIPHERTEXT_CHECK_COLS];
+            let cols: &mut CiphertextCheckCols<F> = row.as_mut_slice().borrow_mut();
+            cols.shard = F::from_canonical_u32(event.shard);
+            cols.clk = F::from_canonical_u32(event.clk);
+            cols.is_real = F::ONE;
+            cols.is_first_row = F::ONE;
+            cols.is_inner_row = F::ZERO;
+            cols.receive_syscall = F::ONE;
+            cols.input_address = F::from_canonical_u32(input_address);
+            cols.output_address = F::from_canonical_u32(event.output_addr);
+            cols.gates_num = F::from_canonical_u32(gates_num as u32);
+            for i in 0..4 {
+                let delta_i_bytes = event.delta[i].to_le_bytes();
+                cols.delta[i].0
+                    .iter_mut().enumerate()
+                    .for_each(|(id, x)| *x = F::from_canonical_u8(delta_i_bytes[id]));
+            }
+            // read number of gates
+            cols.gates_input_mem[0].populate(event.num_gates_read_record, blu);
+            // read delta
+            for i in 0..4 {
+                cols.gates_input_mem[1 + i].populate(event.delta_read_records[i], blu);
+            }
+            rows.push(row);
+        }
+
+        input_address += 20;
         for gate_id in 0..gates_num {
             let mut row = [F::ZERO; NUM_CIPHERTEXT_CHECK_COLS];
             let cols: &mut CiphertextCheckCols<F> = row.as_mut_slice().borrow_mut();
             cols.shard = F::from_canonical_u32(event.shard);
             cols.clk = F::from_canonical_u32(event.clk);
             cols.is_real = F::ONE;
-            cols.receive_syscall = F::from_bool(gate_id == 0);
+            cols.is_inner_row = F::ONE;
             cols.input_address = F::from_canonical_u32(input_address);
             cols.output_address = F::from_canonical_u32(event.output_addr);
             cols.is_first_gate = F::from_bool(gate_id == 0);
@@ -113,30 +145,56 @@ impl CiphertextCheckChip {
             cols.gate_id = F::from_canonical_u32(gate_id as u32);
             cols.gates_num = F::from_canonical_u32(gates_num as u32);
 
-            if gate_id == 0 {
-                // read number of gates
-                cols.gates_num_mem.populate(event.num_gates_read_record, blu);
+            for i in 0..4 {
+                let delta_i_bytes = event.delta[i].to_le_bytes();
+                cols.delta[i].0
+                    .iter_mut().enumerate()
+                    .for_each(|(id, x)| *x = F::from_canonical_u8(delta_i_bytes[id]));
             }
 
+
             // read gate info
-            for i in 0..16 {
-                cols.gates_input_mem[i].populate(event.gates_read_records[gate_id * 16 + i], blu);
+            for i in 0..17 {
+                cols.gates_input_mem[i].populate(event.gates_read_records[gate_id * 17 + i], blu);
+            }
+
+            let gate_type = event.gates_info[gate_id * 17];
+            cols.gate_type = F::from_canonical_u32(gate_type);
+            if gate_type == 0 {
+                cols.is_and_gate = F::ONE;
+                cols.is_or_gate = F::ZERO;
+            } else {
+                cols.is_and_gate = F::ZERO;
+                cols.is_or_gate = F::ONE;
             }
 
             // XOR computation
             let mut check_u32s = [0u32; 4];
             for i in 0..4 {
-                let h0_id = gate_id * 16 + i;
-                let h1_id = gate_id * 16 + 4 + i;
-                let label_b_id = gate_id * 16 + 8 + i;
-                let expected_id = gate_id * 16 + 12 + i;
+                let h0_id = gate_id * 17 + 1 + i;
+                let h1_id = gate_id * 17 + 5 + i;
+                let label_b_id = gate_id * 17 + 9 + i;
+                let expected_id = gate_id * 17 + 13 + i;
 
                 let inter1 = cols.inter1[i].populate(blu, event.gates_info[h0_id], event.gates_info[h1_id]);
                 let inter2 = cols.inter2[i].populate(blu, inter1, event.gates_info[label_b_id]);
+                let inter3 = cols.inter3[i].populate(blu, inter2, event.delta[i]);
                 if i == 0 {
-                    check_u32s[i] = cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
+                    if gate_type == 0 {
+                        // AND gate
+                        check_u32s[i] = cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
+                    } else {
+                        // OR gate
+                        check_u32s[i] = cols.is_equal_words[i].populate(inter3, event.gates_info[expected_id]);
+                    }
                 } else  {
-                    check_u32s[i] = check_u32s[i - 1] * cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
+                    if gate_type == 0 {
+                        // AND gate
+                        check_u32s[i] = check_u32s[i - 1] * cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
+                    } else {
+                        // OR gate
+                        check_u32s[i] = check_u32s[i - 1] * cols.is_equal_words[i].populate(inter3, event.gates_info[expected_id]);
+                    }
                 }
 
             }
@@ -153,7 +211,7 @@ impl CiphertextCheckChip {
             }
 
             rows.push(row);
-            input_address += 64;
+            input_address += 68;
         }
         rows
     }

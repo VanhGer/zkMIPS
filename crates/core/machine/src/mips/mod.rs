@@ -623,7 +623,7 @@ impl<F: PrimeField32> MipsAir<F> {
                     .iter()
                     .map(|(_, pre_e)| {
                         if let PrecompileEvent::CiphertextCheck(event) = pre_e {
-                            event.num_gates()
+                            event.num_gates() + 1
                         } else {
                             unreachable!()
                         }
