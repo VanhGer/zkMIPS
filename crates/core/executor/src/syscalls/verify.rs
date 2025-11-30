@@ -22,7 +22,7 @@ impl Syscall for VerifySyscall {
             // vkey_ptr is a pointer to [u32; 8] which contains the verification key.
             // pv_digest_ptr is a pointer to [u32; 8] which contains the public values digest.
 
-            if vkey_ptr % 4 != 0 || pv_digest_ptr % 4 != 0 {
+            if !vkey_ptr.is_multiple_of(4) || !pv_digest_ptr.is_multiple_of(4) {
                 return Err(ExecutionError::InvalidSyscallArgs());
             }
 
@@ -45,16 +45,15 @@ impl Syscall for VerifySyscall {
             let pv_digest_bytes: [u32; 8] = pv_digest.try_into().unwrap();
 
             if let Some(verifier) = rt.subproof_verifier {
-                match verifier.verify_deferred_proof(proof, proof_vk, vkey_bytes, pv_digest_bytes) {
-                    Err(e) => {
-                        log::error!(
-                            "Failed to verify proof {proof_index} with digest {}: {}",
-                            hex::encode(bytemuck::cast_slice(&pv_digest_bytes)),
-                            e
-                        );
-                        return Err(ExecutionError::ExceptionOrTrap());
-                    }
-                    Ok(_) => {}
+                if let Err(e) =
+                    verifier.verify_deferred_proof(proof, proof_vk, vkey_bytes, pv_digest_bytes)
+                {
+                    log::error!(
+                        "Failed to verify proof {proof_index} with digest {}: {}",
+                        hex::encode(bytemuck::cast_slice(&pv_digest_bytes)),
+                        e
+                    );
+                    return Err(ExecutionError::ExceptionOrTrap());
                 }
             } else if rt.state.proof_stream_ptr == 1 {
                 tracing::info!("Not verifying sub proof during runtime");

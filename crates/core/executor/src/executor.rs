@@ -1704,7 +1704,7 @@ impl<'a> Executor<'a> {
         let lo_val = self.register(32.into());
         let hi_val = self.register(33.into());
         let addend = ((hi_val as u64) << 32) + lo_val as u64;
-        let out = (multiply as i64).wrapping_add(addend as i64) as u64;
+        let out = multiply.wrapping_add(addend as i64) as u64;
         let out_lo = out as u32;
         let out_hi = (out >> 32) as u32;
         self.rw_cpu(lo, out_lo, MemoryAccessPosition::A);

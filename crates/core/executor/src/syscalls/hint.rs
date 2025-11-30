@@ -49,7 +49,7 @@ impl Syscall for HintReadSyscall {
             return Err(ExecutionError::ExceptionOrTrap());
         }
 
-        if vec.len() as u32 != len || ptr % 4 != 0 {
+        if vec.len() as u32 != len || !ptr.is_multiple_of(4) {
             log::error!(
                 "Invalid hint read syscall arguments: ptr={}, len={}, vec_len={}",
                 ptr,
