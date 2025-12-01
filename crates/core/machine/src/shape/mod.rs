@@ -216,6 +216,13 @@ impl<F: PrimeField32> CoreShapeConfig<F> {
                             *memory_events_per_row,
                             *allowed_log2_height,
                         ) {
+                            if air.name() == "CiphertextCheck".to_string() {
+                                // memory_events_per_row = 46
+                                // allowed_log2_heights = 3..21
+                                tracing::info!("num_memory_local_events: {:?}, allowed_log2_height: {:?}", num_memory_local_events, allowed_log2_height);
+                                tracing::info!("mem_events_height: {:?}, global_events_height: {:?}", shape[2].1, shape[3].1);
+                                tracing::info!("num_global_events: {:?}", num_global_events);
+                            }
                             let mem_events_height = shape[2].1;
                             let global_events_height = shape[3].1;
                             if num_memory_local_events.div_ceil(NUM_LOCAL_MEMORY_ENTRIES_PER_ROW)
@@ -250,7 +257,7 @@ impl<F: PrimeField32> CoreShapeConfig<F> {
         allowed_log2_height: usize,
     ) -> Vec<[(String, usize); 4]> {
         // TODO: This is a temporary fix to the shape, concretely fix this
-        (1..=4 * air.rows_per_event())
+        (1..=8 * air.rows_per_event())
             .rev()
             .map(|rows_per_event| {
                 let num_local_mem_events =
