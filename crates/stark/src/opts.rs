@@ -68,6 +68,7 @@ impl ZKMProverOpts {
         opts.core_opts.split_opts.keccak /= divisor;
         opts.core_opts.split_opts.sha_extend /= divisor;
         opts.core_opts.split_opts.sha_compress /= divisor;
+        opts.core_opts.split_opts.ciphertext_check /= divisor;
         opts.core_opts.split_opts.memory /= divisor;
 
         opts.recursion_opts.shard_batch_size = 2;
@@ -175,6 +176,7 @@ impl Default for ZKMCoreOpts {
         opts.split_opts.keccak /= divisor;
         opts.split_opts.sha_extend /= divisor;
         opts.split_opts.sha_compress /= divisor;
+        opts.split_opts.ciphertext_check /= divisor;
         opts.split_opts.memory /= divisor;
 
         opts
