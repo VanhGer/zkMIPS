@@ -142,6 +142,7 @@ impl ExecutionRecord {
                 SyscallCode::KECCAK_SPONGE => opts.keccak,
                 SyscallCode::SHA_EXTEND => opts.sha_extend,
                 SyscallCode::SHA_COMPRESS => opts.sha_compress,
+                SyscallCode::CIPHERTEXT_CHECK => opts.ciphertext_check,
                 _ => opts.deferred,
             };
 
@@ -166,9 +167,30 @@ impl ExecutionRecord {
                     }
                     current_shard.push((syscall_event, event));
                 }
-
                 current_shard
-            } else {
+            } else if syscall_code == SyscallCode::CIPHERTEXT_CHECK {
+                let mut current_shard = Vec::new();
+                let mut current_len = 0;
+
+                for (syscall_event, event) in events {
+                    if let PrecompileEvent::CiphertextCheck(event) = &event {
+                        // Here, input_len_u32s must be a multiple of GENERAL_BLOCK_SIZE_U32S.
+                        let input_len = event.num_gates() + 1;
+
+                        if current_len + input_len > threshold && !current_shard.is_empty() {
+                            let mut record = ExecutionRecord::new(self.program.clone());
+                            record.precompile_events.insert(syscall_code, current_shard);
+                            shards_input.push(record);
+                            current_shard = Vec::new();
+                            current_len = 0;
+                        }
+                        current_len += input_len;
+                    }
+                    current_shard.push((syscall_event, event));
+                }
+                current_shard
+            }
+            else {
                 let chunks = events.chunks_exact(threshold);
                 let remainder = chunks.remainder().to_vec();
                 for chunk in chunks {
