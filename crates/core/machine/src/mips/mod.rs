@@ -282,7 +282,7 @@ impl<F: PrimeField32> MipsAir<F> {
         chips.push(keccak_sponge);
 
         let ciphertext_check = Chip::new(MipsAir::<F>::CiphertextCheck(CiphertextCheckChip::new()));
-        log::info!("cost: {:?}",  ciphertext_check.cost());
+        // log::info!("cost: {:?}",  ciphertext_check.cost());
         costs.insert(ciphertext_check.name(), ciphertext_check.cost());
         chips.push(ciphertext_check);
 
