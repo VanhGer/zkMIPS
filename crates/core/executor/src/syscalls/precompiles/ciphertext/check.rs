@@ -27,7 +27,7 @@ impl Syscall for CiphertextCheckSyscall {
 
         // for each gate info
         let mut gate_info_ptr = input_ptr + 20;
-        for i in 0..num_gates_u32 {
+        for _ in 0..num_gates_u32 {
             let (gate_type_record, gate_type_u32) = ctx.mr(gate_info_ptr);
             gate_read_records.push(gate_type_record);
             gates_info.push(gate_type_u32);

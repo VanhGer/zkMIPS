@@ -40,7 +40,7 @@ impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
                         unreachable!();
                     };
 
-                    let _ = self.event_to_rows::<F>(&event, &mut blu);
+                    let _ = self.event_to_rows::<F>(event, &mut blu);
                 });
                 blu
             })
@@ -64,7 +64,7 @@ impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
                     unreachable!();
                 };
 
-                self.event_to_rows(&event, &mut Vec::new())
+                self.event_to_rows(event, &mut Vec::new())
             })
             .collect();
 
@@ -195,18 +195,16 @@ impl CiphertextCheckChip {
                         check_u32s[i] =
                             cols.is_equal_words[i].populate(inter3, event.gates_info[expected_id]);
                     }
+                } else if gate_type == 0 {
+                    // AND gate
+                    check_u32s[i] = check_u32s[i - 1]
+                        * cols.is_equal_words[i]
+                            .populate(inter2, event.gates_info[expected_id]);
                 } else {
-                    if gate_type == 0 {
-                        // AND gate
-                        check_u32s[i] = check_u32s[i - 1]
-                            * cols.is_equal_words[i]
-                                .populate(inter2, event.gates_info[expected_id]);
-                    } else {
-                        // OR gate
-                        check_u32s[i] = check_u32s[i - 1]
-                            * cols.is_equal_words[i]
-                                .populate(inter3, event.gates_info[expected_id]);
-                    }
+                    // OR gate
+                    check_u32s[i] = check_u32s[i - 1]
+                        * cols.is_equal_words[i]
+                            .populate(inter3, event.gates_info[expected_id]);
                 }
             }
             // populate check results
