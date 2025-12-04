@@ -4,7 +4,13 @@ use crate::syscalls::{Syscall, SyscallCode, SyscallContext};
 pub(crate) struct CiphertextCheckSyscall;
 
 impl Syscall for CiphertextCheckSyscall {
-    fn execute(&self, ctx: &mut SyscallContext, syscall_code: SyscallCode, arg1: u32, arg2: u32) -> Option<u32> {
+    fn execute(
+        &self,
+        ctx: &mut SyscallContext,
+        syscall_code: SyscallCode,
+        arg1: u32,
+        arg2: u32,
+    ) -> Option<u32> {
         let start_clk = ctx.clk;
         let input_ptr = arg1;
         let output_ptr = arg2;
@@ -38,7 +44,8 @@ impl Syscall for CiphertextCheckSyscall {
             gate_read_records.extend_from_slice(&label_b_read_records);
             gates_info.extend_from_slice(&label_b_u32s);
 
-            let (expected_ciphertext, expected_ciphertext_u32s) = ctx.mr_slice(gate_info_ptr + 52, 4);
+            let (expected_ciphertext, expected_ciphertext_u32s) =
+                ctx.mr_slice(gate_info_ptr + 52, 4);
             gate_read_records.extend_from_slice(&expected_ciphertext);
             gates_info.extend_from_slice(&expected_ciphertext_u32s);
 
@@ -48,17 +55,19 @@ impl Syscall for CiphertextCheckSyscall {
             let label_b: [u32; 4] = label_b_u32s.try_into().unwrap();
             let expected_ciphertext: [u32; 4] = expected_ciphertext_u32s.try_into().unwrap();
 
-            let computed_ciphertext = h0.iter().zip(h1.iter().zip(label_b.iter().zip(delta.iter())))
+            let computed_ciphertext = h0
+                .iter()
+                .zip(h1.iter().zip(label_b.iter().zip(delta.iter())))
                 .map(|(&h0_i, (&h1_i, (&label_b_i, &delta_i)))| {
-                if gate_type_u32 == 0 {
-                    // AND gate
-                    h0_i ^ h1_i ^ label_b_i
-                } else {
-                    // OR gate
-                    h0_i ^ h1_i ^ label_b_i ^ delta_i
-                }
-            }).collect::<Vec<u32>>();
-
+                    if gate_type_u32 == 0 {
+                        // AND gate
+                        h0_i ^ h1_i ^ label_b_i
+                    } else {
+                        // OR gate
+                        h0_i ^ h1_i ^ label_b_i ^ delta_i
+                    }
+                })
+                .collect::<Vec<u32>>();
 
             let checked = computed_ciphertext.as_slice() == expected_ciphertext.as_slice();
             result = result && checked;
@@ -91,7 +100,11 @@ impl Syscall for CiphertextCheckSyscall {
             arg1,
             arg2,
         );
-        ctx.add_precompile_event(syscall_code, syscall_event, PrecompileEvent::CiphertextCheck(event));
+        ctx.add_precompile_event(
+            syscall_code,
+            syscall_event,
+            PrecompileEvent::CiphertextCheck(event),
+        );
         None
     }
 }

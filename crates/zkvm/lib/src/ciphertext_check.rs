@@ -1,8 +1,6 @@
 use crate::syscall_ciphertext_check;
 
-pub fn ciphertext_check(
-    gates_info: &[u8],
-) -> bool {
+pub fn ciphertext_check(gates_info: &[u8]) -> bool {
     // assert the gates info
     assert_eq!(gates_info.len() % 68, 16);
     let num_gates = (gates_info.len() / 68) as u32;

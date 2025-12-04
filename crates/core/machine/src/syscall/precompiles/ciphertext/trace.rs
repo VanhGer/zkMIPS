@@ -1,17 +1,21 @@
+use crate::syscall::precompiles::ciphertext::columns::{
+    CiphertextCheckCols, NUM_CIPHERTEXT_CHECK_COLS,
+};
+use crate::CiphertextCheckChip;
 use hashbrown::HashMap;
 use itertools::Itertools;
 use p3_field::PrimeField32;
 use p3_matrix::dense::RowMajorMatrix;
-use rayon::prelude::ParallelSlice;
-use zkm_core_executor::{ExecutionRecord, Program};
-use zkm_core_executor::events::{ByteLookupEvent, ByteRecord, CiphertextCheckEvent, PrecompileEvent};
-use zkm_core_executor::syscalls::SyscallCode;
-use zkm_stark::MachineAir;
-use std::borrow::BorrowMut;
-use rayon::iter::IntoParallelRefIterator;
 use p3_maybe_rayon::prelude::ParallelIterator;
-use crate::CiphertextCheckChip;
-use crate::syscall::precompiles::ciphertext::columns::{CiphertextCheckCols, NUM_CIPHERTEXT_CHECK_COLS};
+use rayon::iter::IntoParallelRefIterator;
+use rayon::prelude::ParallelSlice;
+use std::borrow::BorrowMut;
+use zkm_core_executor::events::{
+    ByteLookupEvent, ByteRecord, CiphertextCheckEvent, PrecompileEvent,
+};
+use zkm_core_executor::syscalls::SyscallCode;
+use zkm_core_executor::{ExecutionRecord, Program};
+use zkm_stark::MachineAir;
 
 impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
     type Record = ExecutionRecord;
@@ -49,7 +53,7 @@ impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
         &self,
         input: &Self::Record,
         _output: &mut Self::Record,
-    ) -> RowMajorMatrix<F>{
+    ) -> RowMajorMatrix<F> {
         let events = input.get_precompile_events(SyscallCode::CIPHERTEXT_CHECK);
         let mut rows: Vec<[F; NUM_CIPHERTEXT_CHECK_COLS]> = events
             .par_iter()
@@ -63,8 +67,6 @@ impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
                 self.event_to_rows(&event, &mut Vec::new())
             })
             .collect();
-
-
 
         let num_real_rows = rows.len();
         let padded_num_rows = num_real_rows.next_power_of_two();
@@ -116,8 +118,10 @@ impl CiphertextCheckChip {
             cols.gates_num = F::from_canonical_u32(gates_num as u32);
             for i in 0..4 {
                 let delta_i_bytes = event.delta[i].to_le_bytes();
-                cols.delta[i].0
-                    .iter_mut().enumerate()
+                cols.delta[i]
+                    .0
+                    .iter_mut()
+                    .enumerate()
                     .for_each(|(id, x)| *x = F::from_canonical_u8(delta_i_bytes[id]));
             }
             // read number of gates
@@ -147,11 +151,12 @@ impl CiphertextCheckChip {
 
             for i in 0..4 {
                 let delta_i_bytes = event.delta[i].to_le_bytes();
-                cols.delta[i].0
-                    .iter_mut().enumerate()
+                cols.delta[i]
+                    .0
+                    .iter_mut()
+                    .enumerate()
                     .for_each(|(id, x)| *x = F::from_canonical_u8(delta_i_bytes[id]));
             }
-
 
             // read gate info
             for i in 0..17 {
@@ -176,27 +181,33 @@ impl CiphertextCheckChip {
                 let label_b_id = gate_id * 17 + 9 + i;
                 let expected_id = gate_id * 17 + 13 + i;
 
-                let inter1 = cols.inter1[i].populate(blu, event.gates_info[h0_id], event.gates_info[h1_id]);
+                let inter1 =
+                    cols.inter1[i].populate(blu, event.gates_info[h0_id], event.gates_info[h1_id]);
                 let inter2 = cols.inter2[i].populate(blu, inter1, event.gates_info[label_b_id]);
                 let inter3 = cols.inter3[i].populate(blu, inter2, event.delta[i]);
                 if i == 0 {
                     if gate_type == 0 {
                         // AND gate
-                        check_u32s[i] = cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
+                        check_u32s[i] =
+                            cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
                     } else {
                         // OR gate
-                        check_u32s[i] = cols.is_equal_words[i].populate(inter3, event.gates_info[expected_id]);
+                        check_u32s[i] =
+                            cols.is_equal_words[i].populate(inter3, event.gates_info[expected_id]);
                     }
-                } else  {
+                } else {
                     if gate_type == 0 {
                         // AND gate
-                        check_u32s[i] = check_u32s[i - 1] * cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
+                        check_u32s[i] = check_u32s[i - 1]
+                            * cols.is_equal_words[i]
+                                .populate(inter2, event.gates_info[expected_id]);
                     } else {
                         // OR gate
-                        check_u32s[i] = check_u32s[i - 1] * cols.is_equal_words[i].populate(inter3, event.gates_info[expected_id]);
+                        check_u32s[i] = check_u32s[i - 1]
+                            * cols.is_equal_words[i]
+                                .populate(inter3, event.gates_info[expected_id]);
                     }
                 }
-
             }
             // populate check results
             cols.checks[0] = F::from_canonical_u32(check_u32s[1]);
