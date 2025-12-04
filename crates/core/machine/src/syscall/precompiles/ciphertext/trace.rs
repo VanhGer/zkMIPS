@@ -198,13 +198,11 @@ impl CiphertextCheckChip {
                 } else if gate_type == 0 {
                     // AND gate
                     check_u32s[i] = check_u32s[i - 1]
-                        * cols.is_equal_words[i]
-                            .populate(inter2, event.gates_info[expected_id]);
+                        * cols.is_equal_words[i].populate(inter2, event.gates_info[expected_id]);
                 } else {
                     // OR gate
                     check_u32s[i] = check_u32s[i - 1]
-                        * cols.is_equal_words[i]
-                            .populate(inter3, event.gates_info[expected_id]);
+                        * cols.is_equal_words[i].populate(inter3, event.gates_info[expected_id]);
                 }
             }
             // populate check results
