@@ -250,7 +250,7 @@ impl<F: PrimeField32> CoreShapeConfig<F> {
         allowed_log2_height: usize,
     ) -> Vec<[(String, usize); 4]> {
         // TODO: This is a temporary fix to the shape, concretely fix this
-        (1..=8 * air.rows_per_event())
+        (1..=4 * air.rows_per_event())
             .rev()
             .map(|rows_per_event| {
                 let num_local_mem_events =
