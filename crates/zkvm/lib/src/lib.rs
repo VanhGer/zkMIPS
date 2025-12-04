@@ -2,9 +2,9 @@
 //!
 //! Documentation for these syscalls can be found in the zkVM entrypoint
 //! `zkm_zkvm::syscalls` module.
-pub mod ciphertext_check;
 pub mod bls12381;
 pub mod bn254;
+pub mod ciphertext_check;
 #[cfg(feature = "ecdsa")]
 pub mod ecdsa;
 

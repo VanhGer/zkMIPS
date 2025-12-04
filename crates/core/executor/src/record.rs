@@ -189,8 +189,7 @@ impl ExecutionRecord {
                     current_shard.push((syscall_event, event));
                 }
                 current_shard
-            }
-            else {
+            } else {
                 let chunks = events.chunks_exact(threshold);
                 let remainder = chunks.remainder().to_vec();
                 for chunk in chunks {

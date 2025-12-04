@@ -1,14 +1,15 @@
-use std::borrow::Borrow;
-use log::__private_api::loc;
+use crate::air::MemoryAirBuilder;
+use crate::operations::{IsEqualWordOperation, XorOperation};
+use crate::syscall::precompiles::ciphertext::columns::{
+    CiphertextCheckCols, NUM_CIPHERTEXT_CHECK_COLS,
+};
+use crate::CiphertextCheckChip;
 use p3_air::{Air, AirBuilder, BaseAir};
 use p3_field::FieldAlgebra;
 use p3_matrix::Matrix;
+use std::borrow::Borrow;
 use zkm_core_executor::syscalls::SyscallCode;
 use zkm_stark::{LookupScope, ZKMAirBuilder};
-use crate::air::{MemoryAirBuilder, WordAirBuilder};
-use crate::CiphertextCheckChip;
-use crate::operations::{IsEqualWordOperation, IsZeroWordOperation, XorOperation};
-use crate::syscall::precompiles::ciphertext::columns::{CiphertextCheckCols, NUM_CIPHERTEXT_CHECK_COLS};
 
 impl<F> BaseAir<F> for CiphertextCheckChip {
     fn width(&self) -> usize {
@@ -60,15 +61,12 @@ impl CiphertextCheckChip {
         builder.assert_bool(local.is_or_gate);
         builder.assert_zero(local.is_and_gate * local.is_or_gate);
 
-        builder.when(local.is_inner_row * local.is_and_gate).assert_eq(
-            local.gate_type,
-            AB::F::ZERO
-        );
-        builder.when(local.is_inner_row * local.is_or_gate).assert_eq(
-            local.gate_type,
-            AB::F::from_canonical_u32(7_u32)
-        );
-
+        builder
+            .when(local.is_inner_row * local.is_and_gate)
+            .assert_eq(local.gate_type, AB::F::ZERO);
+        builder
+            .when(local.is_inner_row * local.is_or_gate)
+            .assert_eq(local.gate_type, AB::F::from_canonical_u32(7_u32));
     }
 
     fn eval_memory_access<AB: ZKMAirBuilder>(
@@ -82,7 +80,7 @@ impl CiphertextCheckChip {
             local.clk,
             local.input_address, // adjust for num_gates u32,
             &local.gates_input_mem[0],
-            local.is_first_row
+            local.is_first_row,
         );
 
         // eval delta read
@@ -161,7 +159,7 @@ impl CiphertextCheckChip {
                 local.inter2[i].value.map(|x| x.into()),
                 local.gates_input_mem[expected_id].access.value.map(|x| x.into()),
                 local.is_equal_words[i],
-                local.is_and_gate.into()
+                local.is_and_gate.into(),
             );
 
             IsEqualWordOperation::<AB::F>::eval(
@@ -169,12 +167,13 @@ impl CiphertextCheckChip {
                 local.inter3[i].value.map(|x| x.into()),
                 local.gates_input_mem[expected_id].access.value.map(|x| x.into()),
                 local.is_equal_words[i],
-                local.is_or_gate.into()
+                local.is_or_gate.into(),
             );
         }
         builder.when(local.is_inner_row).assert_eq(
             local.checks[0],
-            local.is_equal_words[0].is_diff_zero.result * local.is_equal_words[1].is_diff_zero.result,
+            local.is_equal_words[0].is_diff_zero.result
+                * local.is_equal_words[1].is_diff_zero.result,
         );
         builder.when(local.is_inner_row).assert_eq(
             local.checks[1],
@@ -184,10 +183,9 @@ impl CiphertextCheckChip {
             local.checks[2],
             local.is_equal_words[3].is_diff_zero.result * local.checks[1],
         );
-        builder.when(local.not_last_gate).assert_eq(
-            next.checks[3],
-            local.checks[3] * next.checks[2]
-        );
+        builder
+            .when(local.not_last_gate)
+            .assert_eq(next.checks[3], local.checks[3] * next.checks[2]);
     }
 
     fn eval_transition<AB: AirBuilder>(
@@ -198,9 +196,9 @@ impl CiphertextCheckChip {
     ) {
         let bytes_shift = AB::F::from_canonical_u32(256);
         let num_gates = local.gates_input_mem[0].access.value.0[0]
-        + local.gates_input_mem[0].access.value.0[1] * bytes_shift
-        + local.gates_input_mem[0].access.value.0[2] * bytes_shift * bytes_shift
-        + local.gates_input_mem[0].access.value.0[3] * bytes_shift * bytes_shift * bytes_shift;
+            + local.gates_input_mem[0].access.value.0[1] * bytes_shift
+            + local.gates_input_mem[0].access.value.0[2] * bytes_shift * bytes_shift
+            + local.gates_input_mem[0].access.value.0[3] * bytes_shift * bytes_shift * bytes_shift;
         builder.when(local.is_first_row).assert_eq(local.gates_num, num_gates);
 
         for i in 0..4 {
@@ -214,22 +212,19 @@ impl CiphertextCheckChip {
         builder.when(local.is_last_gate).assert_eq(local.gates_num - AB::F::ONE, local.gate_id);
         builder.when(local.not_last_gate).assert_eq(local.gate_id + AB::F::ONE, next.gate_id);
 
-        builder.when(local.not_last_gate * local.is_inner_row).assert_eq(
-            local.input_address + AB::F::from_canonical_u32(68),
-            next.input_address
-        );
+        builder
+            .when(local.not_last_gate * local.is_inner_row)
+            .assert_eq(local.input_address + AB::F::from_canonical_u32(68), next.input_address);
 
-        builder.when(local.not_last_gate * local.is_inner_row).assert_eq(
-            local.gates_num,
-            next.gates_num
-        );
+        builder
+            .when(local.not_last_gate * local.is_inner_row)
+            .assert_eq(local.gates_num, next.gates_num);
 
         for i in 0..4 {
             for j in 0..4 {
-                builder.when(local.not_last_gate * local.is_inner_row).assert_eq(
-                    local.delta[i][j],
-                    next.delta[i][j],
-                );
+                builder
+                    .when(local.not_last_gate * local.is_inner_row)
+                    .assert_eq(local.delta[i][j], next.delta[i][j]);
             }
         }
     }
