@@ -5,11 +5,11 @@ use crate::events::{
     MemoryLocalEvent,
 };
 
-/// Ciphertext Check Event
+/// Boolean Circuit Garble Event
 ///
-/// This event is emitted when a ciphertext check operation is performed.
+/// This event is emitted when a boolean circuit garble operation is performed.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
-pub struct CiphertextCheckEvent {
+pub struct BooleanCircuitGarbleEvent {
     /// The shard number.
     pub shard: u32,
     /// The clock cycle.
@@ -38,7 +38,7 @@ pub struct CiphertextCheckEvent {
     pub local_mem_access: Vec<MemoryLocalEvent>,
 }
 
-impl CiphertextCheckEvent {
+impl BooleanCircuitGarbleEvent {
     pub fn num_gates(&self) -> usize {
         self.num_gates as usize
     }

@@ -1,9 +1,9 @@
 use crate::air::MemoryAirBuilder;
 use crate::operations::{IsEqualWordOperation, XorOperation};
-use crate::syscall::precompiles::ciphertext::columns::{
-    CiphertextCheckCols, NUM_CIPHERTEXT_CHECK_COLS,
+use crate::syscall::precompiles::boolean_circuit_garble::columns::{
+    BooleanCircuitGarbleCols, NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
 };
-use crate::CiphertextCheckChip;
+use crate::syscall::precompiles::boolean_circuit_garble::BooleanCircuitGarbleChip;
 use p3_air::{Air, AirBuilder, BaseAir};
 use p3_field::FieldAlgebra;
 use p3_matrix::Matrix;
@@ -11,26 +11,26 @@ use std::borrow::Borrow;
 use zkm_core_executor::syscalls::SyscallCode;
 use zkm_stark::{LookupScope, ZKMAirBuilder};
 
-impl<F> BaseAir<F> for CiphertextCheckChip {
+impl<F> BaseAir<F> for BooleanCircuitGarbleChip {
     fn width(&self) -> usize {
-        NUM_CIPHERTEXT_CHECK_COLS
+        NUM_BOOLEAN_CIRCUIT_GARBLE_COLS
     }
 }
 
-impl<AB> Air<AB> for CiphertextCheckChip
+impl<AB> Air<AB> for BooleanCircuitGarbleChip
 where
     AB: ZKMAirBuilder,
 {
     fn eval(&self, builder: &mut AB) {
         let main = builder.main();
         let (local, next) = (main.row_slice(0), main.row_slice(1));
-        let local: &CiphertextCheckCols<AB::Var> = (*local).borrow();
-        let next: &CiphertextCheckCols<AB::Var> = (*next).borrow();
+        let local: &BooleanCircuitGarbleCols<AB::Var> = (*local).borrow();
+        let next: &BooleanCircuitGarbleCols<AB::Var> = (*next).borrow();
 
         builder.receive_syscall(
             local.shard,
             local.clk,
-            AB::F::from_canonical_u32(SyscallCode::CIPHERTEXT_CHECK.syscall_id()),
+            AB::F::from_canonical_u32(SyscallCode::BOOLEAN_CIRCUIT_GARBLE.syscall_id()),
             local.input_address, // adjust for num_gates u32
             local.output_address,
             local.receive_syscall,
@@ -44,11 +44,11 @@ where
     }
 }
 
-impl CiphertextCheckChip {
+impl BooleanCircuitGarbleChip {
     fn eval_flags<AB: ZKMAirBuilder>(
         &self,
         builder: &mut AB,
-        local: &CiphertextCheckCols<AB::Var>,
+        local: &BooleanCircuitGarbleCols<AB::Var>,
     ) {
         builder.assert_bool(local.is_real);
         builder.assert_bool(local.is_first_gate);
@@ -72,7 +72,7 @@ impl CiphertextCheckChip {
     fn eval_memory_access<AB: ZKMAirBuilder>(
         &self,
         builder: &mut AB,
-        local: &CiphertextCheckCols<AB::Var>,
+        local: &BooleanCircuitGarbleCols<AB::Var>,
     ) {
         // eval gate number read
         builder.eval_memory_access(
@@ -117,8 +117,8 @@ impl CiphertextCheckChip {
     fn eval_logic_check<AB: ZKMAirBuilder>(
         &self,
         builder: &mut AB,
-        local: &CiphertextCheckCols<AB::Var>,
-        next: &CiphertextCheckCols<AB::Var>,
+        local: &BooleanCircuitGarbleCols<AB::Var>,
+        next: &BooleanCircuitGarbleCols<AB::Var>,
     ) {
         // eval XOR operations
         for i in 0..4 {
@@ -191,8 +191,8 @@ impl CiphertextCheckChip {
     fn eval_transition<AB: AirBuilder>(
         &self,
         builder: &mut AB,
-        local: &CiphertextCheckCols<AB::Var>,
-        next: &CiphertextCheckCols<AB::Var>,
+        local: &BooleanCircuitGarbleCols<AB::Var>,
+        next: &BooleanCircuitGarbleCols<AB::Var>,
     ) {
         let bytes_shift = AB::F::from_canonical_u32(256);
         let num_gates = local.gates_input_mem[0].access.value.0[0]

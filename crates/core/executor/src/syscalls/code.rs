@@ -180,8 +180,8 @@ pub enum SyscallCode {
     /// Executes the `POSEIDON2_PERMUTE` precompile.
     POSEIDON2_PERMUTE = 0x00_01_00_30,
 
-    /// Executes the `CIPHERTEXT_CHECK` precompile.
-    CIPHERTEXT_CHECK = 0x00_01_00_31,
+    /// Executes the `BOOLEAN_CIRCUIT_GARBLE` precompile.
+    BOOLEAN_CIRCUIT_GARBLE = 0x00_01_00_31,
 
     SYS_LINUX = 4000, // not real syscall, used for represent all linux syscalls
 
@@ -235,7 +235,7 @@ impl SyscallCode {
             0x00_01_00_2D => SyscallCode::SECP256R1_DOUBLE,
             0x00_01_00_2E => SyscallCode::SECP256R1_DECOMPRESS,
             0x01_01_00_2F => SyscallCode::U256XU2048_MUL,
-            0x00_01_00_31 => SyscallCode::CIPHERTEXT_CHECK,
+            0x00_01_00_31 => SyscallCode::BOOLEAN_CIRCUIT_GARBLE,
             4000 => SyscallCode::SYS_LINUX,
             4003 => SyscallCode::SYS_READ,
             4004 => SyscallCode::SYS_WRITE,

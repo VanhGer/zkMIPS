@@ -3,11 +3,11 @@ use crate::operations::{IsEqualWordOperation, XorOperation};
 use zkm_derive::AlignedBorrow;
 use zkm_stark::Word;
 
-/// CiphertextCheckCols is the column layout for the Ciphertext check.
+/// BooleanCircuitGarbleCols is the column layout for the Boolean Circuit Garble.
 /// The number of rows equal to the number of gates
 #[derive(AlignedBorrow)]
 #[repr(C)]
-pub struct CiphertextCheckCols<T> {
+pub struct BooleanCircuitGarbleCols<T> {
     pub shard: T,
     pub clk: T,
     pub is_real: T,
@@ -34,4 +34,4 @@ pub struct CiphertextCheckCols<T> {
     pub checks: [T; 4], // check result for each pair of is_equal_words
 }
 
-pub const NUM_CIPHERTEXT_CHECK_COLS: usize = size_of::<CiphertextCheckCols<u8>>();
+pub const NUM_BOOLEAN_CIRCUIT_GARBLE_COLS: usize = size_of::<BooleanCircuitGarbleCols<u8>>();
