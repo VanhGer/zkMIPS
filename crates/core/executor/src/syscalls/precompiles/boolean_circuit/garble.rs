@@ -1,9 +1,9 @@
-use crate::events::{CiphertextCheckEvent, PrecompileEvent};
+use crate::events::{BooleanCircuitGarbleEvent, PrecompileEvent};
 use crate::syscalls::{Syscall, SyscallCode, SyscallContext};
 
-pub(crate) struct CiphertextCheckSyscall;
+pub(crate) struct BooleanCircuitGarbleSyscall;
 
-impl Syscall for CiphertextCheckSyscall {
+impl Syscall for BooleanCircuitGarbleSyscall {
     fn execute(
         &self,
         ctx: &mut SyscallContext,
@@ -77,7 +77,7 @@ impl Syscall for CiphertextCheckSyscall {
         // write result to output
         let write_record = ctx.mw(output_ptr, result as u32);
         let shard = ctx.current_shard();
-        let event = CiphertextCheckEvent {
+        let event = BooleanCircuitGarbleEvent {
             shard,
             clk: start_clk,
             input_addr: input_ptr,
@@ -103,7 +103,7 @@ impl Syscall for CiphertextCheckSyscall {
         ctx.add_precompile_event(
             syscall_code,
             syscall_event,
-            PrecompileEvent::CiphertextCheck(event),
+            PrecompileEvent::BooleanCircuitGarble(event),
         );
         None
     }

@@ -1,6 +1,6 @@
-use crate::syscall_ciphertext_check;
+use crate::syscall_boolean_circuit_garble;
 
-pub fn ciphertext_check(gates_info: &[u8]) -> bool {
+pub fn boolean_circuit_garble(gates_info: &[u8]) -> bool {
     // assert the gates info
     assert_eq!(gates_info.len() % 68, 16);
     let num_gates = (gates_info.len() / 68) as u32;
@@ -28,28 +28,28 @@ pub fn ciphertext_check(gates_info: &[u8]) -> bool {
     input4.extend_from_slice(&gates_info[end3..]);
     let mut output = 0_u32;
     unsafe {
-        syscall_ciphertext_check(input1.as_ptr(), &mut output);
+        syscall_boolean_circuit_garble(input1.as_ptr(), &mut output);
     }
     assert!(output <= 1);
     if output == 0 {
         return false;
     }
     unsafe {
-        syscall_ciphertext_check(input2.as_ptr(), &mut output);
+        syscall_boolean_circuit_garble(input2.as_ptr(), &mut output);
     }
     assert!(output <= 1);
     if output == 0 {
         return false;
     }
     unsafe {
-        syscall_ciphertext_check(input3.as_ptr(), &mut output);
+        syscall_boolean_circuit_garble(input3.as_ptr(), &mut output);
     }
     assert!(output <= 1);
     if output == 0 {
         return false;
     }
     unsafe {
-        syscall_ciphertext_check(input4.as_ptr(), &mut output);
+        syscall_boolean_circuit_garble(input4.as_ptr(), &mut output);
     }
     assert!(output <= 1);
     output == 1

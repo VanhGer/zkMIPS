@@ -1,7 +1,7 @@
-use crate::syscall::precompiles::ciphertext::columns::{
-    CiphertextCheckCols, NUM_CIPHERTEXT_CHECK_COLS,
+use crate::syscall::precompiles::boolean_circuit_garble::columns::{
+    BooleanCircuitGarbleCols, NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
 };
-use crate::CiphertextCheckChip;
+use crate::syscall::precompiles::boolean_circuit_garble::BooleanCircuitGarbleChip;
 use hashbrown::HashMap;
 use itertools::Itertools;
 use p3_field::PrimeField32;
@@ -11,22 +11,22 @@ use rayon::iter::IntoParallelRefIterator;
 use rayon::prelude::ParallelSlice;
 use std::borrow::BorrowMut;
 use zkm_core_executor::events::{
-    ByteLookupEvent, ByteRecord, CiphertextCheckEvent, PrecompileEvent,
+    BooleanCircuitGarbleEvent, ByteLookupEvent, ByteRecord, PrecompileEvent,
 };
 use zkm_core_executor::syscalls::SyscallCode;
 use zkm_core_executor::{ExecutionRecord, Program};
 use zkm_stark::MachineAir;
 
-impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
+impl<F: PrimeField32> MachineAir<F> for BooleanCircuitGarbleChip {
     type Record = ExecutionRecord;
     type Program = Program;
 
     fn name(&self) -> String {
-        "CiphertextCheck".to_string()
+        "BooleanCircuitGarble".to_string()
     }
 
     fn generate_dependencies(&self, input: &Self::Record, output: &mut Self::Record) {
-        let events = input.get_precompile_events(SyscallCode::CIPHERTEXT_CHECK);
+        let events = input.get_precompile_events(SyscallCode::BOOLEAN_CIRCUIT_GARBLE);
         let chunk_size = std::cmp::max(events.len() / num_cpus::get(), 1);
 
         let blu_batches = events
@@ -34,7 +34,7 @@ impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
             .map(|events| {
                 let mut blu: HashMap<ByteLookupEvent, usize> = HashMap::new();
                 events.iter().for_each(|(_, event)| {
-                    let event = if let PrecompileEvent::CiphertextCheck(event) = event {
+                    let event = if let PrecompileEvent::BooleanCircuitGarble(event) = event {
                         event
                     } else {
                         unreachable!();
@@ -54,11 +54,11 @@ impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
         input: &Self::Record,
         _output: &mut Self::Record,
     ) -> RowMajorMatrix<F> {
-        let events = input.get_precompile_events(SyscallCode::CIPHERTEXT_CHECK);
-        let mut rows: Vec<[F; NUM_CIPHERTEXT_CHECK_COLS]> = events
+        let events = input.get_precompile_events(SyscallCode::BOOLEAN_CIRCUIT_GARBLE);
+        let mut rows: Vec<[F; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS]> = events
             .par_iter()
             .flat_map(|(_, event)| {
-                let event = if let PrecompileEvent::CiphertextCheck(event) = event {
+                let event = if let PrecompileEvent::BooleanCircuitGarble(event) = event {
                     event
                 } else {
                     unreachable!();
@@ -71,12 +71,12 @@ impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
         let num_real_rows = rows.len();
         let padded_num_rows = num_real_rows.next_power_of_two();
         for _ in num_real_rows..padded_num_rows {
-            let row = [F::ZERO; NUM_CIPHERTEXT_CHECK_COLS];
+            let row = [F::ZERO; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS];
             rows.push(row);
         }
         RowMajorMatrix::new(
             rows.into_iter().flatten().collect::<Vec<_>>(),
-            NUM_CIPHERTEXT_CHECK_COLS,
+            NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
         )
     }
 
@@ -84,17 +84,17 @@ impl<F: PrimeField32> MachineAir<F> for CiphertextCheckChip {
         if let Some(shape) = shard.shape.as_ref() {
             shape.included::<F, _>(self)
         } else {
-            !shard.get_precompile_events(SyscallCode::CIPHERTEXT_CHECK).is_empty()
+            !shard.get_precompile_events(SyscallCode::BOOLEAN_CIRCUIT_GARBLE).is_empty()
         }
     }
 }
 
-impl CiphertextCheckChip {
+impl BooleanCircuitGarbleChip {
     pub fn event_to_rows<F: PrimeField32>(
         &self,
-        event: &CiphertextCheckEvent,
+        event: &BooleanCircuitGarbleEvent,
         blu: &mut impl ByteRecord,
-    ) -> Vec<[F; NUM_CIPHERTEXT_CHECK_COLS]> {
+    ) -> Vec<[F; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS]> {
         let gates_num = event.num_gates();
         let mut rows = Vec::new();
 
@@ -105,8 +105,8 @@ impl CiphertextCheckChip {
         // gates_num: gate_input_mem[0]
         // delta: gate_input_mem[1..5]
         {
-            let mut row = [F::ZERO; NUM_CIPHERTEXT_CHECK_COLS];
-            let cols: &mut CiphertextCheckCols<F> = row.as_mut_slice().borrow_mut();
+            let mut row = [F::ZERO; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS];
+            let cols: &mut BooleanCircuitGarbleCols<F> = row.as_mut_slice().borrow_mut();
             cols.shard = F::from_canonical_u32(event.shard);
             cols.clk = F::from_canonical_u32(event.clk);
             cols.is_real = F::ONE;
@@ -135,8 +135,8 @@ impl CiphertextCheckChip {
 
         input_address += 20;
         for gate_id in 0..gates_num {
-            let mut row = [F::ZERO; NUM_CIPHERTEXT_CHECK_COLS];
-            let cols: &mut CiphertextCheckCols<F> = row.as_mut_slice().borrow_mut();
+            let mut row = [F::ZERO; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS];
+            let cols: &mut BooleanCircuitGarbleCols<F> = row.as_mut_slice().borrow_mut();
             cols.shard = F::from_canonical_u32(event.shard);
             cols.clk = F::from_canonical_u32(event.clk);
             cols.is_real = F::ONE;

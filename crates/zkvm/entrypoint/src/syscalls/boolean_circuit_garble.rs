@@ -1,7 +1,7 @@
 #[cfg(target_os = "zkvm")]
 use core::arch::asm;
 
-/// Executes the check ciphertexts
+/// Executes the boolean circuit garble
 ///
 /// ### Safety
 ///
@@ -9,12 +9,12 @@ use core::arch::asm;
 /// a four byte boundary.
 #[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn syscall_ciphertext_check(input: *const u8, output: *mut u32) {
+pub extern "C" fn syscall_boolean_circuit_garble(input: *const u8, output: *mut u32) {
     #[cfg(target_os = "zkvm")]
     unsafe {
         asm!(
         "syscall",
-        in("$2") crate::syscalls::CIPHERTEXT_CHECK,
+        in("$2") crate::syscalls::BOOLEAN_CIRCUIT_GARBLE,
         in("$4") input,
         in("$5") output,
         );
