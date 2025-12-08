@@ -54,3 +54,16 @@ cargo run --bin post_trusted_setup --release -- --build-dir build/groth16
 
 echo "--------[TODO] Release--------"
 # make release-circuits
+
+echo "--------[TODO] Clear--------"
+# rm -rf Groth16Verifier.sol
+# rm -rf build/
+# rm -rf data/
+# rm -rf pk
+# rm -rf powersOfTau28_hez_final.ptau
+# rm -rf semaphore-gnark-11
+# rm -rf semaphore-mtb-setup/
+# rm -rf trusted-setup/
+# rm -rf vk
+# rm -rf wrap_vk.bin
+# rm -rf wrapped_proof.bin
