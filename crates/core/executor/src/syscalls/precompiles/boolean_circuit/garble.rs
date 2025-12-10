@@ -1,5 +1,6 @@
 use crate::events::{BooleanCircuitGarbleEvent, PrecompileEvent};
 use crate::syscalls::{Syscall, SyscallCode, SyscallContext};
+use crate::ExecutionError;
 
 pub(crate) struct BooleanCircuitGarbleSyscall;
 
@@ -10,7 +11,7 @@ impl Syscall for BooleanCircuitGarbleSyscall {
         syscall_code: SyscallCode,
         arg1: u32,
         arg2: u32,
-    ) -> Option<u32> {
+    ) -> Result<Option<u32>, ExecutionError> {
         let start_clk = ctx.clk;
         let input_ptr = arg1;
         let output_ptr = arg2;
@@ -105,6 +106,6 @@ impl Syscall for BooleanCircuitGarbleSyscall {
             syscall_event,
             PrecompileEvent::BooleanCircuitGarble(event),
         );
-        None
+        Ok(None)
     }
 }
