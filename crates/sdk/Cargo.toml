@@ -63,20 +63,10 @@ test-artifacts = { workspace = true }
 
 [features]
 default = ["network"]
+#default = []
+pre-alloc = [ "zkm-core-executor/pre-alloc" ]
 native-gnark = ["zkm-prover/native-gnark"]
-# TODO: Once alloy has a 1.* release, we can likely remove this feature flag, as there will be less 
-# dependency resolution issues.
 network = [
-  "dep:prost",
-  "dep:alloy-sol-types",
-  "dep:tokio",
-  "dep:alloy-signer-local",
-  "dep:reqwest",
-  "dep:twirp",
-  "dep:ethers",
-#  "dep:reqwest-middleware",
-]
-network-v2 = [
   "dep:prost",
   "dep:alloy-sol-types",
   "dep:alloy-signer-local",
