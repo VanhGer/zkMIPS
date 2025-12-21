@@ -25,7 +25,6 @@ twirp-build = { package = "twirp-build-rs", version = "0.13.0-succinct" }
 
 [dev-dependencies]
 zkm-core-machine = { path = "../core/machine" }
-test-artifacts = { path = "../test-artifacts" }
 
 [features]
 default = []
