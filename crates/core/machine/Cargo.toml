@@ -65,7 +65,6 @@ zkm-stark = { workspace = true }
 
 [dev-dependencies]
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-criterion = "0.5.1"
 num = { version = "0.4.3", features = ["rand"] }
 rand = "0.8.5"
 test-artifacts = { workspace = true }
@@ -74,10 +73,6 @@ test-artifacts = { workspace = true }
 zkm-stark = { workspace = true }
 zkm-primitives = { workspace = true }
 p3-koala-bear = { workspace = true }
-cbindgen = "0.27.0"
-cc = "1.1"
-pathdiff = "0.2.1"
-glob = "0.3.1"
 
 [features]
 default = []

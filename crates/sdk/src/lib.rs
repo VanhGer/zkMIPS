@@ -378,22 +378,6 @@ impl NetworkProverBuilder {
         self.skip_simulation = true;
         self
     }
-
-    // /// Creates a new [NetworkProverV1].
-    // #[cfg(feature = "network")]
-    // pub fn build(self) -> NetworkProverV1 {
-    //     let private_key = self.private_key.expect("The private key is required");
-
-    //     NetworkProverV1::new(&private_key, self.rpc_url, self.skip_simulation)
-    // }
-
-    /// Creates a new [NetworkProverV2].
-    #[cfg(feature = "network-v2")]
-    pub fn build_v2(self) -> NetworkProverV2 {
-        let private_key = self.private_key.expect("The private key is required");
-
-        NetworkProverV2::new(&private_key, self.rpc_url, self.skip_simulation)
-    }
 }
 
 #[cfg(test)]

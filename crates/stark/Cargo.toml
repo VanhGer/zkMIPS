@@ -49,4 +49,3 @@ num-traits = "0.2.19"
 sysinfo = "0.30.13"
 
 [dev-dependencies]
-postcard = { version = "1.0.0", default-features = false, features = ["alloc"] }
