@@ -45,14 +45,11 @@ impl CpuProver {
         // Generate the wrap proof.
         let outer_proof = self.prover.wrap_bn254(shrink_proof, opts.zkm_prover_opts)?;
 
-        let groth16_bn254_artifacts = if zkm_prover::build::zkm_dev_mode() {
+        let groth16_bn254_artifacts =
             zkm_prover::build::try_build_groth16_bn254_artifacts_dev(
                 &outer_proof.vk,
                 &outer_proof.proof,
-            )
-        } else {
-            try_install_circuit_artifacts("groth16")
-        };
+            );
 
         let proof = self.prover.wrap_groth16_bn254(outer_proof, &groth16_bn254_artifacts);
         Ok(ZKMProofWithPublicValues {
@@ -151,14 +148,14 @@ impl Prover<DefaultProverComponents> for CpuProver {
                 cycles,
             ));
         } else if kind == ZKMProofKind::Groth16 {
-            let groth16_bn254_artifacts = if zkm_prover::build::zkm_dev_mode() {
+            let groth16_bn254_artifacts =
                 zkm_prover::build::try_build_groth16_bn254_artifacts_dev(
                     &outer_proof.vk,
                     &outer_proof.proof,
-                )
-            } else {
-                try_install_circuit_artifacts("groth16")
-            };
+                );
+            // } else {
+            //     try_install_circuit_artifacts("groth16")
+            // };
 
             let proof = self.prover.wrap_groth16_bn254(outer_proof, &groth16_bn254_artifacts);
             return Ok((
