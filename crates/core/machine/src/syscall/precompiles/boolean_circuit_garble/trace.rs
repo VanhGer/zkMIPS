@@ -4,6 +4,7 @@ use crate::syscall::precompiles::boolean_circuit_garble::columns::{
 use crate::syscall::precompiles::boolean_circuit_garble::{
     BooleanCircuitGarbleChip, GATE_INFO_BYTES,
 };
+use crate::CoreChipError;
 use hashbrown::HashMap;
 use itertools::Itertools;
 use p3_field::PrimeField32;
@@ -22,12 +23,17 @@ use zkm_stark::MachineAir;
 impl<F: PrimeField32> MachineAir<F> for BooleanCircuitGarbleChip {
     type Record = ExecutionRecord;
     type Program = Program;
+    type Error = CoreChipError;
 
     fn name(&self) -> String {
         "BooleanCircuitGarble".to_string()
     }
 
-    fn generate_dependencies(&self, input: &Self::Record, output: &mut Self::Record) {
+    fn generate_dependencies(
+        &self,
+        input: &Self::Record,
+        output: &mut Self::Record,
+    ) -> Result<(), Self::Error> {
         let events = input.get_precompile_events(SyscallCode::BOOLEAN_CIRCUIT_GARBLE);
         let chunk_size = std::cmp::max(events.len() / num_cpus::get(), 1);
 
@@ -49,13 +55,14 @@ impl<F: PrimeField32> MachineAir<F> for BooleanCircuitGarbleChip {
             .collect::<Vec<_>>();
 
         output.add_byte_lookup_events_from_maps(blu_batches.iter().collect_vec());
+        Ok(())
     }
 
     fn generate_trace(
         &self,
         input: &Self::Record,
         _output: &mut Self::Record,
-    ) -> RowMajorMatrix<F> {
+    ) -> Result<RowMajorMatrix<F>, Self::Error> {
         let events = input.get_precompile_events(SyscallCode::BOOLEAN_CIRCUIT_GARBLE);
         let mut rows: Vec<[F; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS]> = events
             .par_iter()
@@ -72,10 +79,10 @@ impl<F: PrimeField32> MachineAir<F> for BooleanCircuitGarbleChip {
 
         let padded = if rows.is_empty() { 0 } else { rows.len().next_power_of_two() };
         rows.resize_with(padded, || [F::ZERO; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS]);
-        RowMajorMatrix::new(
+        Ok(RowMajorMatrix::new(
             rows.into_iter().flatten().collect::<Vec<_>>(),
             NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
-        )
+        ))
     }
 
     fn included(&self, shard: &Self::Record) -> bool {
