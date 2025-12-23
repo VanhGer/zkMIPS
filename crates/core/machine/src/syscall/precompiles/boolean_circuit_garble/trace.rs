@@ -1,7 +1,9 @@
 use crate::syscall::precompiles::boolean_circuit_garble::columns::{
     BooleanCircuitGarbleCols, NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
 };
-use crate::syscall::precompiles::boolean_circuit_garble::BooleanCircuitGarbleChip;
+use crate::syscall::precompiles::boolean_circuit_garble::{
+    BooleanCircuitGarbleChip, GATE_INFO_BYTES,
+};
 use hashbrown::HashMap;
 use itertools::Itertools;
 use p3_field::PrimeField32;
@@ -68,12 +70,8 @@ impl<F: PrimeField32> MachineAir<F> for BooleanCircuitGarbleChip {
             })
             .collect();
 
-        let num_real_rows = rows.len();
-        let padded_num_rows = num_real_rows.next_power_of_two();
-        for _ in num_real_rows..padded_num_rows {
-            let row = [F::ZERO; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS];
-            rows.push(row);
-        }
+        let padded = if rows.is_empty() { 0 } else { rows.len().next_power_of_two() };
+        rows.resize_with(padded, || [F::ZERO; NUM_BOOLEAN_CIRCUIT_GARBLE_COLS]);
         RowMajorMatrix::new(
             rows.into_iter().flatten().collect::<Vec<_>>(),
             NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
@@ -159,11 +157,12 @@ impl BooleanCircuitGarbleChip {
             }
 
             // read gate info
-            for i in 0..17 {
-                cols.gates_input_mem[i].populate(event.gates_read_records[gate_id * 17 + i], blu);
+            for i in 0..GATE_INFO_BYTES {
+                cols.gates_input_mem[i]
+                    .populate(event.gates_read_records[gate_id * GATE_INFO_BYTES + i], blu);
             }
 
-            let gate_type = event.gates_info[gate_id * 17];
+            let gate_type = event.gates_info[gate_id * GATE_INFO_BYTES];
             cols.gate_type = F::from_canonical_u32(gate_type);
             if gate_type == 0 {
                 cols.is_and_gate = F::ONE;
@@ -176,10 +175,10 @@ impl BooleanCircuitGarbleChip {
             // XOR computation
             let mut check_u32s = [0u32; 4];
             for i in 0..4 {
-                let h0_id = gate_id * 17 + 1 + i;
-                let h1_id = gate_id * 17 + 5 + i;
-                let label_b_id = gate_id * 17 + 9 + i;
-                let expected_id = gate_id * 17 + 13 + i;
+                let h0_id = gate_id * GATE_INFO_BYTES + 1 + i;
+                let h1_id = gate_id * GATE_INFO_BYTES + 5 + i;
+                let label_b_id = gate_id * GATE_INFO_BYTES + 9 + i;
+                let expected_id = gate_id * GATE_INFO_BYTES + 13 + i;
 
                 let inter1 =
                     cols.inter1[i].populate(blu, event.gates_info[h0_id], event.gates_info[h1_id]);

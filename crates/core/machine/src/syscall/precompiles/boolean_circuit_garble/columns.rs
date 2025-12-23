@@ -17,8 +17,8 @@ pub struct BooleanCircuitGarbleCols<T> {
     pub is_first_row: T,
     pub is_inner_row: T,
     pub is_first_gate: T,
-    pub is_last_gate: T, // from first gate -> (last - 1)-th gate
-    pub not_last_gate: T,
+    pub is_last_gate: T,
+    pub not_last_gate: T, // from first gate -> (last - 1)-th gate
     pub is_and_gate: T,
     pub is_or_gate: T,
     pub gate_type: T,

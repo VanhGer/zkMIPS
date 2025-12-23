@@ -3,7 +3,9 @@ use crate::operations::{IsEqualWordOperation, XorOperation};
 use crate::syscall::precompiles::boolean_circuit_garble::columns::{
     BooleanCircuitGarbleCols, NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
 };
-use crate::syscall::precompiles::boolean_circuit_garble::BooleanCircuitGarbleChip;
+use crate::syscall::precompiles::boolean_circuit_garble::{
+    BooleanCircuitGarbleChip, GATE_INFO_BYTES, OR_GATE_ID,
+};
 use p3_air::{Air, AirBuilder, BaseAir};
 use p3_field::FieldAlgebra;
 use p3_matrix::Matrix;
@@ -66,7 +68,7 @@ impl BooleanCircuitGarbleChip {
             .assert_eq(local.gate_type, AB::F::ZERO);
         builder
             .when(local.is_inner_row * local.is_or_gate)
-            .assert_eq(local.gate_type, AB::F::from_canonical_u32(7_u32));
+            .assert_eq(local.gate_type, AB::F::from_canonical_u32(OR_GATE_ID));
     }
 
     fn eval_memory_access<AB: ZKMAirBuilder>(
@@ -95,7 +97,7 @@ impl BooleanCircuitGarbleChip {
         }
 
         // eval gate info read
-        for i in 0..17 {
+        for i in 0..GATE_INFO_BYTES {
             builder.eval_memory_access(
                 local.shard,
                 local.clk,
@@ -199,12 +201,12 @@ impl BooleanCircuitGarbleChip {
             + local.gates_input_mem[0].access.value.0[1] * bytes_shift
             + local.gates_input_mem[0].access.value.0[2] * bytes_shift * bytes_shift
             + local.gates_input_mem[0].access.value.0[3] * bytes_shift * bytes_shift * bytes_shift;
-        builder.when(local.is_first_row).assert_eq(local.gates_num, num_gates);
+        builder.when_first_row().assert_eq(local.gates_num, num_gates);
 
         for i in 0..4 {
             let delta_i = local.gates_input_mem[i + 1].access.value;
             for j in 0..4 {
-                builder.when(local.is_first_row).assert_eq(local.delta[i][j], delta_i[j]);
+                builder.when_first_row().assert_eq(local.delta[i][j], delta_i[j]);
             }
         }
 
@@ -212,9 +214,10 @@ impl BooleanCircuitGarbleChip {
         builder.when(local.is_last_gate).assert_eq(local.gates_num - AB::F::ONE, local.gate_id);
         builder.when(local.not_last_gate).assert_eq(local.gate_id + AB::F::ONE, next.gate_id);
 
-        builder
-            .when(local.not_last_gate * local.is_inner_row)
-            .assert_eq(local.input_address + AB::F::from_canonical_u32(68), next.input_address);
+        builder.when(local.not_last_gate * local.is_inner_row).assert_eq(
+            local.input_address + AB::F::from_canonical_usize(GATE_INFO_BYTES * 4),
+            next.input_address,
+        );
 
         builder
             .when(local.not_last_gate * local.is_inner_row)

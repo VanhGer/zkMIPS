@@ -4,6 +4,9 @@ use crate::ExecutionError;
 
 pub(crate) struct BooleanCircuitGarbleSyscall;
 
+// number of bytes for each gate input info.
+pub const GATE_INFO_BYTES: usize = 17;
+
 impl Syscall for BooleanCircuitGarbleSyscall {
     fn execute(
         &self,
@@ -16,8 +19,6 @@ impl Syscall for BooleanCircuitGarbleSyscall {
         let input_ptr = arg1;
         let output_ptr = arg2;
 
-        let mut gate_read_records = Vec::new();
-        let mut gates_info: Vec<u32> = Vec::new();
         let mut result = true;
 
         // read number of gates
@@ -26,35 +27,20 @@ impl Syscall for BooleanCircuitGarbleSyscall {
         let (delta_read_records, delta_u32s) = ctx.mr_slice(input_ptr + 4, 4);
         let delta: [u32; 4] = delta_u32s.try_into().unwrap();
 
+        let gate_input_size = GATE_INFO_BYTES as u32 * num_gates_u32;
+        let gates_base_ptr = input_ptr + 20;
+        let (gate_read_records, gates_info) =
+            ctx.mr_slice(gates_base_ptr, gate_input_size as usize);
+
         // for each gate info
-        let mut gate_info_ptr = input_ptr + 20;
-        for _ in 0..num_gates_u32 {
-            let (gate_type_record, gate_type_u32) = ctx.mr(gate_info_ptr);
-            gate_read_records.push(gate_type_record);
-            gates_info.push(gate_type_u32);
+        for i in 0..num_gates_u32 {
+            let base = i as usize * GATE_INFO_BYTES;
 
-            let (h0_read_records, h0_u32s) = ctx.mr_slice(gate_info_ptr + 4, 4);
-            gate_read_records.extend_from_slice(&h0_read_records);
-            gates_info.extend_from_slice(&h0_u32s);
-
-            let (h1_read_records, h1_u32s) = ctx.mr_slice(gate_info_ptr + 20, 4);
-            gate_read_records.extend_from_slice(&h1_read_records);
-            gates_info.extend_from_slice(&h1_u32s);
-
-            let (label_b_read_records, label_b_u32s) = ctx.mr_slice(gate_info_ptr + 36, 4);
-            gate_read_records.extend_from_slice(&label_b_read_records);
-            gates_info.extend_from_slice(&label_b_u32s);
-
-            let (expected_ciphertext, expected_ciphertext_u32s) =
-                ctx.mr_slice(gate_info_ptr + 52, 4);
-            gate_read_records.extend_from_slice(&expected_ciphertext);
-            gates_info.extend_from_slice(&expected_ciphertext_u32s);
-
-            // do the check
-            let h0: [u32; 4] = h0_u32s.try_into().unwrap();
-            let h1: [u32; 4] = h1_u32s.try_into().unwrap();
-            let label_b: [u32; 4] = label_b_u32s.try_into().unwrap();
-            let expected_ciphertext: [u32; 4] = expected_ciphertext_u32s.try_into().unwrap();
+            let gate_type_u32 = gates_info[base];
+            let h0 = &gates_info[base + 1..base + 5];
+            let h1 = &gates_info[base + 5..base + 9];
+            let label_b = &gates_info[base + 9..base + 13];
+            let expected_ciphertext = &gates_info[base + 13..base + 17];
 
             let computed_ciphertext = h0
                 .iter()
@@ -70,9 +56,8 @@ impl Syscall for BooleanCircuitGarbleSyscall {
                 })
                 .collect::<Vec<u32>>();
 
-            let checked = computed_ciphertext.as_slice() == expected_ciphertext.as_slice();
+            let checked = computed_ciphertext.as_slice() == expected_ciphertext;
             result = result && checked;
-            gate_info_ptr += 68;
         }
 
         // write result to output
