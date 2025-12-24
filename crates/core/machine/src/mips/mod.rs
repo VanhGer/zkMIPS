@@ -282,7 +282,7 @@ impl<F: PrimeField32> MipsAir<F> {
         chips.push(keccak_sponge);
 
         let boolean_circuit_garble =
-            Chip::new(MipsAir::<F>::BooleanCircuitGarble(BooleanCircuitGarbleChip::new()));
+            Chip::new(MipsAir::<F>::BooleanCircuitGarble(BooleanCircuitGarbleChip::default()));
         costs.insert(boolean_circuit_garble.name(), boolean_circuit_garble.cost());
         chips.push(boolean_circuit_garble);
 

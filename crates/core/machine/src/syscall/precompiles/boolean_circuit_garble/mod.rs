@@ -9,10 +9,5 @@ pub const GATE_INFO_BYTES: usize = 17;
 pub const OR_GATE_ID: u32 = 7;
 
 /// A chip that computes non-free-gate ciphertexts and verifies them against the received ones.
+#[derive(Default)]
 pub struct BooleanCircuitGarbleChip;
-
-impl BooleanCircuitGarbleChip {
-    pub const fn new() -> Self {
-        Self {}
-    }
-}
