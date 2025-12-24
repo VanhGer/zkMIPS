@@ -54,11 +54,9 @@ impl BooleanCircuitGarbleChip {
     ) {
         builder.assert_bool(local.is_real);
         builder.assert_bool(local.is_first_gate);
-        builder.assert_bool(local.is_last_gate);
         builder.assert_bool(local.not_last_gate);
         builder.assert_zero(local.is_last_gate * local.not_last_gate);
         builder.assert_zero(local.is_last_gate * local.is_first_gate);
-        builder.assert_bool(local.is_first_row);
         builder.assert_bool(local.is_and_gate);
         builder.assert_bool(local.is_or_gate);
         builder.assert_zero(local.is_and_gate * local.is_or_gate);
@@ -82,7 +80,7 @@ impl BooleanCircuitGarbleChip {
             local.clk,
             local.input_address, // adjust for num_gates u32,
             &local.gates_input_mem[0],
-            local.is_first_row,
+            local.receive_syscall,
         );
 
         // eval delta read
@@ -92,7 +90,7 @@ impl BooleanCircuitGarbleChip {
                 local.clk,
                 local.input_address + AB::F::from_canonical_u32(4 + (i as u32) * 4),
                 &local.gates_input_mem[i + 1],
-                local.is_first_row,
+                local.receive_syscall,
             );
         }
 

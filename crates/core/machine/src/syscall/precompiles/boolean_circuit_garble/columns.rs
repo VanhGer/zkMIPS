@@ -14,7 +14,6 @@ pub struct BooleanCircuitGarbleCols<T> {
     pub input_address: T,
     pub output_address: T,
     pub receive_syscall: T,
-    pub is_first_row: T,
     pub is_inner_row: T,
     pub is_first_gate: T,
     pub is_last_gate: T,

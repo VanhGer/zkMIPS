@@ -115,7 +115,6 @@ impl BooleanCircuitGarbleChip {
             cols.shard = F::from_canonical_u32(event.shard);
             cols.clk = F::from_canonical_u32(event.clk);
             cols.is_real = F::ONE;
-            cols.is_first_row = F::ONE;
             cols.is_inner_row = F::ZERO;
             cols.receive_syscall = F::ONE;
             cols.input_address = F::from_canonical_u32(input_address);

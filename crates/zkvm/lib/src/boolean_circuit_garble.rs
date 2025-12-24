@@ -1,11 +1,12 @@
 use crate::syscall_boolean_circuit_garble;
-
+pub const GATE_INFO_BYTES: usize = 68;
+pub const MAX_GATES_PER_SYSCALL: usize = 62500;
 pub fn boolean_circuit_garble(gates_info: &[u8]) -> bool {
     // Validate layout
-    assert_eq!(gates_info.len() % 68, 16);
+    assert_eq!(gates_info.len() % GATE_INFO_BYTES, 16);
 
-    let num_gates = gates_info.len() / 68;
-    let syscall_num = (num_gates - 1) / 62500 + 1;
+    let num_gates = gates_info.len() / GATE_INFO_BYTES;
+    let syscall_num = (num_gates - 1) / MAX_GATES_PER_SYSCALL + 1;
     let base = num_gates / syscall_num;
     let remainder = num_gates - base * (syscall_num - 1);
 
@@ -17,9 +18,9 @@ pub fn boolean_circuit_garble(gates_info: &[u8]) -> bool {
     let mut start_offset = 16;
     for _i in 0..syscall_num - 1 {
         // Gate data slice for this chunk
-        let end_offset = start_offset + base * 68;
+        let end_offset = start_offset + base * GATE_INFO_BYTES;
         // Precompute final input length: 4 (count) + 16 (delta) + gate bytes
-        let input_len = 20 + base * 68;
+        let input_len = 20 + base * GATE_INFO_BYTES;
         let mut input = vec![0u8; input_len];
         input[0..4].copy_from_slice(&base_bytes);
         input[4..20].copy_from_slice(delta);
@@ -35,7 +36,7 @@ pub fn boolean_circuit_garble(gates_info: &[u8]) -> bool {
         start_offset = end_offset;
     }
 
-    let input_len = 20 + remainder * 68;
+    let input_len = 20 + remainder * GATE_INFO_BYTES;
     let mut input = vec![0u8; input_len];
     input[0..4].copy_from_slice(&remainder_bytes);
     input[4..20].copy_from_slice(delta);
