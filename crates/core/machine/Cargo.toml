@@ -73,13 +73,17 @@ test-artifacts = { workspace = true }
 zkm-stark = { workspace = true }
 zkm-primitives = { workspace = true }
 p3-koala-bear = { workspace = true }
+cbindgen = { version = "0.29.2", optional = true }
+cc = { version = "1.1", optional = true }
+pathdiff = { version = "0.2.1", optional = true }
+glob = { version = "0.3.1", optional = true }
 
 [features]
 default = []
 debug = []
 bigint-rug = ["zkm-curves/bigint-rug", "zkm-core-executor/bigint-rug"]
 pre-alloc = ["zkm-core-executor/pre-alloc"]
-sys = []
+sys = ["dep:glob", "dep:cc", "dep:cbindgen", "dep:pathdiff"]
 
 [lib]
 bench = false
