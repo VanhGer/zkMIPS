@@ -2,7 +2,7 @@ use crate::syscall::precompiles::boolean_circuit_garble::columns::{
     BooleanCircuitGarbleCols, NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
 };
 use crate::syscall::precompiles::boolean_circuit_garble::{
-    BooleanCircuitGarbleChip, GATE_INFO_BYTES,
+    BooleanCircuitGarbleChip, GATE_INFO_BYTES, OR_GATE_ID,
 };
 use crate::CoreChipError;
 use hashbrown::HashMap;
@@ -169,8 +169,8 @@ impl BooleanCircuitGarbleChip {
             }
 
             let gate_type = event.gates_info[gate_id * GATE_INFO_BYTES];
-            assert!(gate_type == 0 || gate_type == 1);
-            cols.gate_type[gate_type as usize] = F::ONE;
+            assert!(gate_type == 0 || gate_type == OR_GATE_ID);
+            cols.gate_type[(gate_type == OR_GATE_ID) as usize] = F::ONE;
 
             // XOR computation
             let mut check_u32s = [0u32; 4];

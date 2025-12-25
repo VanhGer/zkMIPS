@@ -4,7 +4,7 @@ use crate::syscall::precompiles::boolean_circuit_garble::columns::{
     BooleanCircuitGarbleCols, NUM_BOOLEAN_CIRCUIT_GARBLE_COLS,
 };
 use crate::syscall::precompiles::boolean_circuit_garble::{
-    BooleanCircuitGarbleChip, GATE_INFO_BYTES,
+    BooleanCircuitGarbleChip, GATE_INFO_BYTES, OR_GATE_ID,
 };
 use p3_air::{Air, AirBuilder, BaseAir};
 use p3_field::FieldAlgebra;
@@ -203,7 +203,9 @@ impl BooleanCircuitGarbleChip {
         }
 
         let gate_type_value = local.gate_type[0] * AB::Expr::ZERO + local.gate_type[1];
-        builder.when(local.is_gate).assert_eq(gate_type_value, num_gates);
+        builder
+            .when(local.is_gate)
+            .assert_eq(gate_type_value * AB::Expr::from_canonical_u32(OR_GATE_ID), num_gates);
 
         builder.when(local.is_first_gate).assert_zero(local.gate_id);
         builder.when(local.is_last_gate).assert_eq(local.gates_num - AB::F::ONE, local.gate_id);
