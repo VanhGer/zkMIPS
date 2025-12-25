@@ -115,8 +115,8 @@ impl BooleanCircuitGarbleChip {
             cols.shard = F::from_canonical_u32(event.shard);
             cols.clk = F::from_canonical_u32(event.clk);
             cols.is_real = F::ONE;
-            cols.is_inner_row = F::ZERO;
-            cols.receive_syscall = F::ONE;
+            cols.is_gate = F::ZERO;
+            cols.is_first_row = F::ONE;
             cols.input_address = F::from_canonical_u32(input_address);
             cols.output_address = F::from_canonical_u32(event.output_addr);
             cols.gates_num = F::from_canonical_u32(gates_num as u32);
@@ -144,7 +144,7 @@ impl BooleanCircuitGarbleChip {
             cols.shard = F::from_canonical_u32(event.shard);
             cols.clk = F::from_canonical_u32(event.clk);
             cols.is_real = F::ONE;
-            cols.is_inner_row = F::ONE;
+            cols.is_gate = F::ONE;
             cols.input_address = F::from_canonical_u32(input_address);
             cols.output_address = F::from_canonical_u32(event.output_addr);
             cols.is_first_gate = F::from_bool(gate_id == 0);
@@ -169,14 +169,8 @@ impl BooleanCircuitGarbleChip {
             }
 
             let gate_type = event.gates_info[gate_id * GATE_INFO_BYTES];
-            cols.gate_type = F::from_canonical_u32(gate_type);
-            if gate_type == 0 {
-                cols.is_and_gate = F::ONE;
-                cols.is_or_gate = F::ZERO;
-            } else {
-                cols.is_and_gate = F::ZERO;
-                cols.is_or_gate = F::ONE;
-            }
+            assert!(gate_type == 0 || gate_type == 1);
+            cols.gate_type[gate_type as usize] = F::ONE;
 
             // XOR computation
             let mut check_u32s = [0u32; 4];
@@ -187,9 +181,9 @@ impl BooleanCircuitGarbleChip {
                 let expected_id = gate_id * GATE_INFO_BYTES + 13 + i;
 
                 let inter1 =
-                    cols.inter1[i].populate(blu, event.gates_info[h0_id], event.gates_info[h1_id]);
-                let inter2 = cols.inter2[i].populate(blu, inter1, event.gates_info[label_b_id]);
-                let inter3 = cols.inter3[i].populate(blu, inter2, event.delta[i]);
+                    cols.aux1[i].populate(blu, event.gates_info[h0_id], event.gates_info[h1_id]);
+                let inter2 = cols.aux2[i].populate(blu, inter1, event.gates_info[label_b_id]);
+                let inter3 = cols.aux3[i].populate(blu, inter2, event.delta[i]);
                 if i == 0 {
                     if gate_type == 0 {
                         // AND gate
