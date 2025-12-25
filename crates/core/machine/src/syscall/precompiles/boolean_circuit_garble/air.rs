@@ -55,12 +55,13 @@ impl BooleanCircuitGarbleChip {
         builder.assert_bool(local.is_real);
         builder.assert_bool(local.is_first_gate);
         builder.assert_bool(local.not_last_gate);
-        builder.assert_zero(local.is_last_gate * local.not_last_gate);
+        builder.assert_bool(local.is_gate);
         builder.assert_zero(local.is_last_gate * local.is_first_gate);
+        builder.when(local.is_gate).assert_one(local.is_last_gate + local.not_last_gate);
         builder.assert_bool(local.gate_type[0]);
         builder.assert_bool(local.gate_type[1]);
-        builder.assert_zero(local.gate_type[0] * local.gate_type[1]);
         builder.assert_eq(local.gate_type[0] + local.gate_type[1], local.is_gate);
+        builder.when(local.is_real).assert_one(local.is_first_row + local.is_gate);
     }
 
     fn eval_memory_access<AB: ZKMAirBuilder>(
