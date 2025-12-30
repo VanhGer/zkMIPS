@@ -31,7 +31,12 @@ impl DvSnarkBn254Prover {
     }
 
     /// Builds the DvSnark circuit locally.
-    pub fn build<C: Config>(constraints: Vec<Constraint>, witness: Witness<C>, build_dir: PathBuf) {
+    pub fn build<C: Config>(
+        constraints: Vec<Constraint>,
+        witness: Witness<C>,
+        build_dir: PathBuf,
+        store_dir: PathBuf,
+    ) {
         let serialized = serde_json::to_string(&constraints).unwrap();
 
         // Write constraints.
@@ -47,7 +52,7 @@ impl DvSnarkBn254Prover {
         file.write_all(serialized.as_bytes()).unwrap();
 
         // Build the circuit.
-        build_dvsnark_bn254(build_dir.to_str().unwrap());
+        build_dvsnark_bn254(build_dir.to_str().unwrap(), store_dir.to_str().unwrap());
     }
 
     /// Generates a dv-snark proof given a witness.

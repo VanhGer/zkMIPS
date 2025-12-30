@@ -1,5 +1,4 @@
 use std::{borrow::Borrow, fs::metadata, path::PathBuf};
-
 use p3_koala_bear::KoalaBear;
 use zkm_core_executor::ZKMContext;
 use zkm_core_machine::io::ZKMStdin;
@@ -56,10 +55,13 @@ pub fn try_build_dvsnark_bn254_artifacts_dev(
     tracing::info!("build artifacts dev");
     let build_dir = dvsnark_bn254_artifacts_dev_dir();
 
-    let home = std::env::home_dir().expect("Failed to find the home directory.");
-    let circuits_dir = home.join(".zkm/circuits");
-    let r1cs_to_dvsnark_path = circuits_dir.join("r1cs_to_dvsnark");
-    let r1cs_cached_path = circuits_dir.join("r1cs_cached");
+    // Get the stored dvsnark assets dir via the environment variable.
+    let dvsnark_dir: PathBuf = std::env::var("DVSNARK_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::new());
+
+    let r1cs_to_dvsnark_path = dvsnark_dir.join("r1cs_to_dvsnark");
+    let r1cs_cached_path = dvsnark_dir.join("r1cs_cached");
 
     let mut r1cs_to_dvsnark_content_exist = false;
     if r1cs_to_dvsnark_path.exists() {
@@ -87,7 +89,7 @@ pub fn try_build_dvsnark_bn254_artifacts_dev(
     }
 
     println!("[zkm] building dv-snark bn254 artifacts in development mode");
-    build_dvsnark_bn254_artifacts(template_vk, template_proof, &build_dir);
+    build_dvsnark_bn254_artifacts(template_vk, template_proof, &build_dir, &dvsnark_dir);
     build_dir
 }
 
@@ -138,11 +140,14 @@ pub fn build_dvsnark_bn254_artifacts(
     template_vk: &StarkVerifyingKey<OuterSC>,
     template_proof: &ShardProof<OuterSC>,
     build_dir: impl Into<PathBuf>,
+    store_dir: impl Into<PathBuf>,
 ) {
     let build_dir = build_dir.into();
+    let store_dir = store_dir.into();
     std::fs::create_dir_all(&build_dir).expect("failed to create build directory");
+    std::fs::create_dir_all(&store_dir).expect("failed to create store directory");
     let (constraints, witness) = build_constraints_and_witness(template_vk, template_proof);
-    DvSnarkBn254Prover::build(constraints, witness, build_dir);
+    DvSnarkBn254Prover::build(constraints, witness, build_dir, store_dir);
 }
 
 /// Builds the plonk bn254 artifacts to the given directory.

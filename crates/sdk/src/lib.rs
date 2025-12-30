@@ -505,9 +505,8 @@ mod tests {
         let mut stdin = ZKMStdin::new();
         stdin.write(&10usize);
 
-        // Generate proof & verify.
+        // Generate proof.
         let proof = client.prove(&pk, stdin).dvsnark().run().unwrap();
-        // client.verify(&proof, &vk).unwrap();
         tracing::info!("proof public values {:?}", proof.public_values);
     }
 

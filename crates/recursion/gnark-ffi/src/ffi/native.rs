@@ -18,6 +18,8 @@ mod bind {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 use bind::*;
+use crate::ffi::native::BuildFunction::Plonk;
+use crate::ffi::native::ProofResult::Groth16;
 
 enum ProofSystem {
     Plonk,
@@ -32,11 +34,18 @@ enum ProofResult {
 }
 
 impl ProofSystem {
-    fn build_fn(&self) -> unsafe extern "C" fn(*mut c_char) {
+    fn build_fn(&self) -> BuildFunction {
         match self {
-            ProofSystem::Plonk => bind::BuildPlonkBn254,
-            ProofSystem::Groth16 => bind::BuildGroth16Bn254,
+            ProofSystem::Plonk => BuildFunction::Plonk(bind::BuildPlonkBn254),
+            ProofSystem::Groth16 => BuildFunction::Groth16(bind::BuildGroth16Bn254),
+            ProofSystem::DvSnark => BuildFunction::DvSnark(bind::BuildDvSnarkBn254),
+        }
+    }
+
+    fn build_dvsnark_fn(&self) -> unsafe extern "C" fn(*mut c_char, *mut c_char) {
+        match self {
             ProofSystem::DvSnark => bind::BuildDvSnarkBn254,
+            _ => unreachable!()
         }
     }
 
@@ -71,20 +80,44 @@ impl ProofSystem {
 enum ProveFunction {
     Plonk(unsafe extern "C" fn(*mut c_char, *mut c_char) -> *mut C_PlonkBn254Proof),
     Groth16(unsafe extern "C" fn(*mut c_char, *mut c_char) -> *mut C_Groth16Bn254Proof),
-    DvSnark(unsafe extern "C" fn(*mut c_char, *mut c_char) -> *mut C_DvSnarkBn254Proof),
-
+    DvSnark(unsafe extern "C" fn(*mut c_char, *mut c_char, *mut c_char) -> *mut C_DvSnarkBn254Proof),
 }
 
-fn build(system: ProofSystem, data_dir: &str) {
+enum BuildFunction {
+    Plonk(unsafe extern "C" fn(*mut c_char)),
+    Groth16(unsafe extern "C" fn(*mut c_char)),
+    DvSnark(unsafe extern "C" fn(*mut c_char, *mut c_char)),
+}
+
+fn build(system: ProofSystem, data_dir: &str, store_dir: &str) {
     let data_dir = CString::new(data_dir).expect("CString::new failed");
     unsafe {
-        (system.build_fn())(data_dir.as_ptr() as *mut c_char);
+        match system.build_fn() {
+            BuildFunction::Plonk(func) => {
+                func(data_dir.as_ptr() as *mut c_char);
+            }
+            BuildFunction::Groth16(func) => {
+                func(data_dir.as_ptr() as *mut c_char);
+            }
+            BuildFunction::DvSnark(func) => {
+                let store_dir = CString::new(store_dir).expect("CString::new failed");
+                func(
+                    data_dir.as_ptr() as *mut c_char,
+                    store_dir.as_ptr() as *mut c_char,
+                );
+            }
+        }
     }
 }
 
 fn prove(system: ProofSystem, data_dir: &str, witness_path: &str) -> ProofResult {
     let data_dir = CString::new(data_dir).expect("CString::new failed");
     let witness_path = CString::new(witness_path).expect("CString::new failed");
+
+    // Get the stored dvsnark assets dir via the environment variable.
+    let dvsnark_dir = std::env::var("DVSNARK_DIR")
+        .unwrap_or_else(|_| "".to_string());
+    let cs_dvsnark_dir = CString::new(dvsnark_dir).expect("CString::new failed");
 
     unsafe {
         match system.prove_fn() {
@@ -99,8 +132,11 @@ fn prove(system: ProofSystem, data_dir: &str, witness_path: &str) -> ProofResult
                 ProofResult::Groth16(proof)
             }
             ProveFunction::DvSnark(func) => {
-                let proof =
-                    func(data_dir.as_ptr() as *mut c_char, witness_path.as_ptr() as *mut c_char);
+                let proof = func(
+                    data_dir.as_ptr() as *mut c_char,
+                    witness_path.as_ptr() as *mut c_char,
+                    cs_dvsnark_dir.as_ptr() as *mut c_char,
+                );
                 ProofResult::DvSnark(proof)
             }
         }
@@ -156,7 +192,7 @@ fn test(system: ProofSystem, witness_json: &str, constraints_json: &str) {
 // Public API functions
 
 pub fn build_plonk_bn254(data_dir: &str) {
-    build(ProofSystem::Plonk, data_dir)
+    build(ProofSystem::Plonk, data_dir, "")
 }
 
 pub fn prove_plonk_bn254(data_dir: &str, witness_path: &str) -> PlonkBn254Proof {
@@ -180,7 +216,7 @@ pub fn test_plonk_bn254(witness_json: &str, constraints_json: &str) {
 }
 
 pub fn build_groth16_bn254(data_dir: &str) {
-    build(ProofSystem::Groth16, data_dir)
+    build(ProofSystem::Groth16, data_dir, "")
 }
 
 pub fn prove_groth16_bn254(data_dir: &str, witness_path: &str) -> Groth16Bn254Proof {
@@ -203,8 +239,8 @@ pub fn test_groth16_bn254(witness_json: &str, constraints_json: &str) {
     test(ProofSystem::Groth16, witness_json, constraints_json)
 }
 
-pub fn build_dvsnark_bn254(data_dir: &str) {
-    build(ProofSystem::DvSnark, data_dir)
+pub fn build_dvsnark_bn254(data_dir: &str, store_dir: &str) {
+    build(ProofSystem::DvSnark, data_dir, store_dir)
 }
 
 pub fn prove_dvsnark_bn254(data_dir: &str, witness_path: &str) -> DvSnarkBn254Proof {

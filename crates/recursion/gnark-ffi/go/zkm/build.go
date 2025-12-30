@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"path/filepath"
     "io"
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark-crypto/kzg"
@@ -379,9 +380,10 @@ func Dump(r1cs *bcs.R1CS, w io.Writer) error {
 	return bw.Flush() // explicit flush + propagate any error
 }
 
-func DumpR1CSIfItExists() bool {
+func DumpR1CSIfItExists(storeDir string) bool {
     // Check input exists
-	if stat, err := os.Stat("./r1cs_cached"); err != nil {
+    cacheFilePath := filepath.Join(storeDir, "r1cs_cached")
+	if stat, err := os.Stat(cacheFilePath); err != nil {
 		// doesn't exist or not accessible
 		return false
 	} else if stat.Size() < 1024 {
@@ -389,20 +391,19 @@ func DumpR1CSIfItExists() bool {
 	}
 
 	// Open input
-	r1cs_fn := "./r1cs_cached"
-	file, err := os.Open(r1cs_fn)
+	file, err := os.Open(cacheFilePath)
 	if err != nil {
-		log.Fatalf("Failed to create file: %v", err)
+		log.Fatalf("Failed to open file: %v", err)
 	}
 	var r1cs bcs.R1CS
 	bytesRead, err := r1cs.ReadFrom(file)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Successfully read %d bytes from %s\n", bytesRead, r1cs_fn)
+	fmt.Printf("Successfully read %d bytes from %s\n", bytesRead, cacheFilePath)
 
 	// Create output
-	new_r1cs_fn := "./r1cs_to_dvsnark"
+	new_r1cs_fn := filepath.Join(storeDir, "r1cs_to_dvsnark")
 	new_file, err := os.Create(new_r1cs_fn)
 	if err != nil {
 		log.Fatalf("Failed to create file: %v", err)
@@ -418,8 +419,8 @@ func DumpR1CSIfItExists() bool {
 	return true
 }
 
-func BuildDvSnark(dataDir string) {
-    r1cs_dumped := DumpR1CSIfItExists()
+func BuildDvSnark(dataDir string, storeDir string) {
+    r1cs_dumped := DumpR1CSIfItExists(storeDir)
 	if r1cs_dumped {
 		fmt.Println("r1cs_cache already exists, converted to format r1cs_to_dvsnark")
 		return
@@ -478,7 +479,7 @@ func BuildDvSnark(dataDir string) {
     }
 
 	{
-        r1cs_fn := "./r1cs_cached"
+        r1cs_fn := filepath.Join(storeDir, "r1cs_cached")
         file, err := os.Create(r1cs_fn)
         if err != nil {
             log.Fatalf("Failed to create file: %v", err)
@@ -492,7 +493,7 @@ func BuildDvSnark(dataDir string) {
     }
 
     {
-        r1cs_fn := "./r1cs_to_dvsnark"
+        r1cs_fn := filepath.Join(storeDir, "r1cs_to_dvsnark")
         file, err := os.Create(r1cs_fn)
         if err != nil {
             log.Fatalf("Failed to create file: %v", err)

@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"path/filepath"
 	"time"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -179,19 +180,19 @@ func ProveGroth16(dataDir string, witnessPath string) Proof {
 	return NewZKMGroth16Proof(&proof, witnessInput)
 }
 
-func SaveWitnessToFile(witnessPath string) {
+func SaveWitnessToFile(witnessPath string, storedDir string) {
     fmt.Printf("witnessPATH: %s\n", witnessPath)
-	r1cs_fn := "./r1cs_cached"
-	file, err := os.Open(r1cs_fn)
+    r1csFilePath := filepath.Join(storedDir, "r1cs_cached")
+	file, err := os.Open(r1csFilePath)
 	if err != nil {
-		log.Fatalf("Failed to create file: %v", err)
+		log.Fatalf("Failed to open file: %v", err)
 	}
 	var r1cs bcs.R1CS
 	bytesRead, err := r1cs.ReadFrom(file)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Successfully read %d bytes from %s\n", bytesRead, r1cs_fn)
+	fmt.Printf("Successfully read %d bytes from %s\n", bytesRead, r1csFilePath)
 
 	start := time.Now()
 	// Read the file.
@@ -224,8 +225,8 @@ func SaveWitnessToFile(witnessPath string) {
 	}
 	solution := _solution.(*bcs.R1CSSolution)
 
-	witness_fn := "./witness_to_dvsnark"
-	wfile, err := os.Create(witness_fn)
+	witnessFilePath := filepath.Join(storedDir, "witness_to_dvsnark")
+	wfile, err := os.Create(witnessFilePath)
 	if err != nil {
 		log.Fatalf("Failed to create file: %v", err)
 	}
@@ -236,14 +237,14 @@ func SaveWitnessToFile(witnessPath string) {
 		log.Fatalf("Failed to write to file: %v", err)
 	}
 
-	fmt.Printf("Successfully wrote %d bytes to %s\n", bytesWritten, witness_fn)
+	fmt.Printf("Successfully wrote %d bytes to %s\n", bytesWritten, witnessFilePath)
 }
 
-func ProveDvSnark(dataDir string, witnessPath string) Proof {
+func ProveDvSnark(dataDir string, witnessPath string, storedDir string) Proof {
 
 	fmt.Println("start SaveWitnessToFile")
 
-	SaveWitnessToFile(witnessPath)
+	SaveWitnessToFile(witnessPath, storedDir)
 
 	fmt.Println("finished SaveWitnessToFile")
 

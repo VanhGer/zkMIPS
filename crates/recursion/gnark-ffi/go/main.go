@@ -182,11 +182,12 @@ func TestGroth16Bn254(witnessJson *C.char, constraintsJson *C.char) *C.char {
 }
 
 //export ProveDvSnarkBn254
-func ProveDvSnarkBn254(dataDir *C.char, witnessPath *C.char) *C.C_DvSnarkBn254Proof {
+func ProveDvSnarkBn254(dataDir *C.char, witnessPath *C.char, storeDir *C.char) *C.C_DvSnarkBn254Proof {
 	dataDirString := C.GoString(dataDir)
 	witnessPathString := C.GoString(witnessPath)
+    storeDirString := C.GoString(storeDir)
 
-	zkmDvSnarkBn254Proof := zkm.ProveDvSnark(dataDirString, witnessPathString)
+	zkmDvSnarkBn254Proof := zkm.ProveDvSnark(dataDirString, witnessPathString, storeDirString)
 
 	ms := C.malloc(C.sizeof_C_DvSnarkBn254Proof)
 	if ms == nil {
@@ -202,11 +203,12 @@ func ProveDvSnarkBn254(dataDir *C.char, witnessPath *C.char) *C.C_DvSnarkBn254Pr
 }
 
 //export BuildDvSnarkBn254
-func BuildDvSnarkBn254(dataDir *C.char) {
+func BuildDvSnarkBn254(dataDir *C.char, storeDir *C.char) {
 	// Sanity check the required arguments have been provided.
 	dataDirString := C.GoString(dataDir)
+	storeDirString := C.GoString(storeDir)
 
-	zkm.BuildDvSnark(dataDirString)
+	zkm.BuildDvSnark(dataDirString, storeDirString)
 }
 
 func TestMain() error {
