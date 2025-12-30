@@ -149,7 +149,7 @@ impl Prover<DefaultProverComponents> for MockProver {
                     0,
                 ))
             }
-            ZKMProofKind::CompressToGroth16 => unreachable!(),
+            _ => unreachable!(),
         }
     }
 

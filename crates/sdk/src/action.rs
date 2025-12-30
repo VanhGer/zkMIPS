@@ -158,6 +158,12 @@ impl<'a> Prove<'a> {
         self
     }
 
+    // Set the proof mode to the dv-snark bn254 mode.
+    pub fn dvsnark(mut self) -> Self {
+        self.kind = ZKMProofKind::DvSnark;
+        self
+    }
+
     /// Set the proof mode to the compressed-proof-to-groth16 mode.
     pub fn compress_to_groth16(mut self) -> Self {
         self.kind = ZKMProofKind::CompressToGroth16;

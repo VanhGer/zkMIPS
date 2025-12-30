@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -13,6 +14,8 @@ import (
 	"github.com/consensys/gnark/backend/plonk"
 	"github.com/consensys/gnark/constraint"
 	"github.com/consensys/gnark/frontend"
+	bcs "github.com/consensys/gnark/constraint/bn254"
+    fr "github.com/consensys/gnark-crypto/ecc/bn254/fr"
 )
 
 var globalMutex sync.RWMutex
@@ -174,4 +177,79 @@ func ProveGroth16(dataDir string, witnessPath string) Proof {
 	fmt.Printf("Generating proof took %s\n", time.Since(start))
 
 	return NewZKMGroth16Proof(&proof, witnessInput)
+}
+
+func SaveWitnessToFile(witnessPath string) {
+    fmt.Printf("witnessPATH: %s\n", witnessPath)
+	r1cs_fn := "./r1cs_cached"
+	file, err := os.Open(r1cs_fn)
+	if err != nil {
+		log.Fatalf("Failed to create file: %v", err)
+	}
+	var r1cs bcs.R1CS
+	bytesRead, err := r1cs.ReadFrom(file)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Successfully read %d bytes from %s\n", bytesRead, r1cs_fn)
+
+	start := time.Now()
+	// Read the file.
+	data, err := os.ReadFile(witnessPath)
+	if err != nil {
+		panic(err)
+	}
+
+	start = time.Now()
+	// Deserialize the JSON data into a slice of Instruction structs
+	var witnessInput WitnessInput
+	err = json.Unmarshal(data, &witnessInput)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Deserializing JSON data took %s\n", time.Since(start))
+
+	start = time.Now()
+	// Generate the witness.
+	assignment := NewCircuit(witnessInput)
+	witness, err := frontend.NewWitness(&assignment, fr.Modulus())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Generating witness took %s\n", time.Since(start))
+
+	_solution, err := r1cs.Solve(witness)
+	if err != nil {
+		panic(err)
+	}
+	solution := _solution.(*bcs.R1CSSolution)
+
+	witness_fn := "./witness_to_dvsnark"
+	wfile, err := os.Create(witness_fn)
+	if err != nil {
+		log.Fatalf("Failed to create file: %v", err)
+	}
+	defer wfile.Close()
+
+	bytesWritten, err := solution.W.WriteTo(wfile)
+	if err != nil {
+		log.Fatalf("Failed to write to file: %v", err)
+	}
+
+	fmt.Printf("Successfully wrote %d bytes to %s\n", bytesWritten, witness_fn)
+}
+
+func ProveDvSnark(dataDir string, witnessPath string) Proof {
+
+	fmt.Println("start SaveWitnessToFile")
+
+	SaveWitnessToFile(witnessPath)
+
+	fmt.Println("finished SaveWitnessToFile")
+
+	return Proof{
+		PublicInputs: [2]string{"", ""},
+		EncodedProof: "",
+		RawProof:     "",
+	}
 }
