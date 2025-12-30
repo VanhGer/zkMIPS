@@ -183,7 +183,6 @@ impl Prover<DefaultProverComponents> for CpuProver {
                 },
                 cycles,
             ));
-            
         }
 
         unreachable!()

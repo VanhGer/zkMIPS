@@ -203,6 +203,9 @@ pub fn test_groth16_bn254(witness_json: &str, constraints_json: &str) {
     test(ProofSystem::Groth16, witness_json, constraints_json)
 }
 
+pub fn build_dvsnark_bn254(data_dir: &str) {
+    build(ProofSystem::DvSnark, data_dir)
+}
 
 pub fn prove_dvsnark_bn254(data_dir: &str, witness_path: &str) -> DvSnarkBn254Proof {
     match prove(ProofSystem::DvSnark, data_dir, witness_path) {

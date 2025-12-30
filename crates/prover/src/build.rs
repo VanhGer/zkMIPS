@@ -18,7 +18,7 @@ pub use zkm_recursion_core::stark::zkm_dev_mode;
 
 pub use zkm_recursion_circuit::witness::{OuterWitness, Witnessable};
 
-use zkm_recursion_gnark_ffi::{Groth16Bn254Prover, PlonkBn254Prover};
+use zkm_recursion_gnark_ffi::{DvSnarkBn254Prover, Groth16Bn254Prover, PlonkBn254Prover};
 use zkm_stark::{ShardProof, StarkVerifyingKey, ZKMProverOpts};
 
 use crate::{
@@ -87,7 +87,7 @@ pub fn try_build_dvsnark_bn254_artifacts_dev(
     }
 
     println!("[zkm] building dv-snark bn254 artifacts in development mode");
-    build_groth16_bn254_artifacts(template_vk, template_proof, &build_dir);
+    build_dvsnark_bn254_artifacts(template_vk, template_proof, &build_dir);
     build_dir
 }
 
@@ -142,7 +142,7 @@ pub fn build_dvsnark_bn254_artifacts(
     let build_dir = build_dir.into();
     std::fs::create_dir_all(&build_dir).expect("failed to create build directory");
     let (constraints, witness) = build_constraints_and_witness(template_vk, template_proof);
-    Groth16Bn254Prover::build(constraints, witness, build_dir);
+    DvSnarkBn254Prover::build(constraints, witness, build_dir);
 }
 
 /// Builds the plonk bn254 artifacts to the given directory.

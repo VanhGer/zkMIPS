@@ -107,6 +107,20 @@ impl CudaProver {
                 zkm_version: self.version().to_string(),
             };
             return Ok((proof_with_pv, cycles));
+        } else if kind == ZKMProofKind::DvSnark {
+            let dv_snark_artifacts = zkm_prover::build::try_build_dvsnark_bn254_artifacts_dev(
+                &outer_proof.vk,
+                &outer_proof.proof,
+            );
+            let proof = self.cpu_prover.wrap_dvsnark_bn254(outer_proof, &dv_snark_artifacts);
+            return Ok((
+                ZKMProofWithPublicValues {
+                    proof: ZKMProof::DvSnark(proof),
+                    public_values,
+                    zkm_version: self.version().to_string(),
+                },
+                cycles,
+            ));
         }
 
         unreachable!()
