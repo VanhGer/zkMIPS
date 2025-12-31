@@ -56,15 +56,23 @@ impl DvSnarkBn254Prover {
     }
 
     /// Generates a dv-snark proof given a witness.
-    pub fn prove<C: Config>(&self, witness: Witness<C>, build_dir: PathBuf) -> DvSnarkBn254Proof {
+    pub fn prove<C: Config>(
+        &self,
+        witness: Witness<C>,
+        build_dir: PathBuf,
+        store_dir: PathBuf,
+    ) -> DvSnarkBn254Proof {
         // Write witness.
         let mut witness_file = tempfile::NamedTempFile::new().unwrap();
         let gnark_witness = GnarkWitness::new(witness);
         let serialized = serde_json::to_string(&gnark_witness).unwrap();
         witness_file.write_all(serialized.as_bytes()).unwrap();
 
-        let mut proof =
-            prove_dvsnark_bn254(build_dir.to_str().unwrap(), witness_file.path().to_str().unwrap());
+        let mut proof = prove_dvsnark_bn254(
+            build_dir.to_str().unwrap(),
+            witness_file.path().to_str().unwrap(),
+            store_dir.to_str().unwrap(),
+        );
         proof.dvsnark_vkey_hash = Self::get_vkey_hash(&build_dir);
         proof
     }

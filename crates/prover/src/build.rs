@@ -51,17 +51,13 @@ pub fn try_build_groth16_bn254_artifacts_dev(
 pub fn try_build_dvsnark_bn254_artifacts_dev(
     template_vk: &StarkVerifyingKey<OuterSC>,
     template_proof: &ShardProof<OuterSC>,
+    store_dir: &PathBuf,
 ) -> PathBuf {
-    tracing::info!("build artifacts dev");
+    tracing::info!("build dvsnark artifacts dev");
     let build_dir = dvsnark_bn254_artifacts_dev_dir();
 
-    // Get the stored dvsnark assets dir via the environment variable.
-    let dvsnark_dir: PathBuf = std::env::var("DVSNARK_DIR")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::new());
-
-    let r1cs_to_dvsnark_path = dvsnark_dir.join("r1cs_to_dvsnark");
-    let r1cs_cached_path = dvsnark_dir.join("r1cs_cached");
+    let r1cs_to_dvsnark_path = store_dir.join("r1cs_to_dvsnark");
+    let r1cs_cached_path = store_dir.join("r1cs_cached");
 
     let mut r1cs_to_dvsnark_content_exist = false;
     if r1cs_to_dvsnark_path.exists() {
@@ -89,7 +85,7 @@ pub fn try_build_dvsnark_bn254_artifacts_dev(
     }
 
     println!("[zkm] building dv-snark bn254 artifacts in development mode");
-    build_dvsnark_bn254_artifacts(template_vk, template_proof, &build_dir, &dvsnark_dir);
+    build_dvsnark_bn254_artifacts(template_vk, template_proof, &build_dir, &store_dir);
     build_dir
 }
 

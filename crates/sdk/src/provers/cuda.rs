@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use anyhow::Result;
 use tonic::async_trait;
 use zkm_core_executor::ZKMContext;
@@ -108,11 +109,20 @@ impl CudaProver {
             };
             return Ok((proof_with_pv, cycles));
         } else if kind == ZKMProofKind::DvSnark {
+            // Get the store dvsnark assets dir via the environment variable.
+            let store_dir: PathBuf = std::env::var("DVSNARK_DIR")
+                .map(PathBuf::from)
+                .unwrap_or_else(|_| PathBuf::new());
             let dv_snark_artifacts = zkm_prover::build::try_build_dvsnark_bn254_artifacts_dev(
                 &outer_proof.vk,
                 &outer_proof.proof,
+                &store_dir,
             );
-            let proof = self.cpu_prover.wrap_dvsnark_bn254(outer_proof, &dv_snark_artifacts);
+            let proof = self.cpu_prover.wrap_dvsnark_bn254(
+                outer_proof,
+                &dv_snark_artifacts,
+                &store_dir
+            );
             return Ok((
                 ZKMProofWithPublicValues {
                     proof: ZKMProof::DvSnark(proof),

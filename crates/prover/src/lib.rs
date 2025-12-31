@@ -1133,6 +1133,7 @@ impl<C: ZKMProverComponents> ZKMProver<C> {
         &self,
         proof: ZKMReduceProof<OuterSC>,
         build_dir: &Path,
+        store_dir: &Path,
     ) -> DvSnarkBn254Proof {
         let input = ZKMCompressWitnessValues {
             vks_and_proofs: vec![(proof.vk.clone(), proof.proof.clone())],
@@ -1147,7 +1148,7 @@ impl<C: ZKMProverComponents> ZKMProver<C> {
         witness.write_vkey_hash(vkey_hash);
 
         let prover = DvSnarkBn254Prover::new();
-        let proof = prover.prove(witness, build_dir.to_path_buf());
+        let proof = prover.prove(witness, build_dir.to_path_buf(), store_dir.to_path_buf());
         proof
     }
 

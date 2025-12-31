@@ -110,14 +110,9 @@ fn build(system: ProofSystem, data_dir: &str, store_dir: &str) {
     }
 }
 
-fn prove(system: ProofSystem, data_dir: &str, witness_path: &str) -> ProofResult {
+fn prove(system: ProofSystem, data_dir: &str, witness_path: &str, store_dir: &str) -> ProofResult {
     let data_dir = CString::new(data_dir).expect("CString::new failed");
     let witness_path = CString::new(witness_path).expect("CString::new failed");
-
-    // Get the stored dvsnark assets dir via the environment variable.
-    let dvsnark_dir = std::env::var("DVSNARK_DIR")
-        .unwrap_or_else(|_| "".to_string());
-    let cs_dvsnark_dir = CString::new(dvsnark_dir).expect("CString::new failed");
 
     unsafe {
         match system.prove_fn() {
@@ -132,10 +127,11 @@ fn prove(system: ProofSystem, data_dir: &str, witness_path: &str) -> ProofResult
                 ProofResult::Groth16(proof)
             }
             ProveFunction::DvSnark(func) => {
+                let store_dir = CString::new(store_dir).expect("CString::new failed");
                 let proof = func(
                     data_dir.as_ptr() as *mut c_char,
                     witness_path.as_ptr() as *mut c_char,
-                    cs_dvsnark_dir.as_ptr() as *mut c_char,
+                    store_dir.as_ptr() as *mut c_char,
                 );
                 ProofResult::DvSnark(proof)
             }
@@ -196,7 +192,7 @@ pub fn build_plonk_bn254(data_dir: &str) {
 }
 
 pub fn prove_plonk_bn254(data_dir: &str, witness_path: &str) -> PlonkBn254Proof {
-    match prove(ProofSystem::Plonk, data_dir, witness_path) {
+    match prove(ProofSystem::Plonk, data_dir, witness_path, "") {
         ProofResult::Plonk(proof) => unsafe { PlonkBn254Proof::from_raw(proof) },
         _ => unreachable!(),
     }
@@ -220,7 +216,7 @@ pub fn build_groth16_bn254(data_dir: &str) {
 }
 
 pub fn prove_groth16_bn254(data_dir: &str, witness_path: &str) -> Groth16Bn254Proof {
-    match prove(ProofSystem::Groth16, data_dir, witness_path) {
+    match prove(ProofSystem::Groth16, data_dir, witness_path, "") {
         ProofResult::Groth16(proof) => unsafe { Groth16Bn254Proof::from_raw(proof) },
         _ => unreachable!(),
     }
@@ -243,8 +239,8 @@ pub fn build_dvsnark_bn254(data_dir: &str, store_dir: &str) {
     build(ProofSystem::DvSnark, data_dir, store_dir)
 }
 
-pub fn prove_dvsnark_bn254(data_dir: &str, witness_path: &str) -> DvSnarkBn254Proof {
-    match prove(ProofSystem::DvSnark, data_dir, witness_path) {
+pub fn prove_dvsnark_bn254(data_dir: &str, witness_path: &str, store_dir: &str) -> DvSnarkBn254Proof {
+    match prove(ProofSystem::DvSnark, data_dir, witness_path, store_dir) {
         ProofResult::DvSnark(proof) => DvSnarkBn254Proof {dvsnark_vkey_hash: [0; 32],},
         _ => unreachable!(),
     }
