@@ -12,7 +12,11 @@ use anyhow::Result;
 use p3_field::{FieldAlgebra, PrimeField};
 use p3_fri::FriProof;
 use p3_koala_bear::KoalaBear;
-use zkm_prover::{components::DefaultProverComponents, verify::{verify_groth16_bn254_public_inputs, verify_plonk_bn254_public_inputs}, DvSnarkBn254Proof, Groth16Bn254Proof, HashableKey, PlonkBn254Proof, ZKMProver};
+use zkm_prover::{
+    components::DefaultProverComponents,
+    verify::{verify_groth16_bn254_public_inputs, verify_plonk_bn254_public_inputs},
+    DvSnarkBn254Proof, Groth16Bn254Proof, HashableKey, PlonkBn254Proof, ZKMProver,
+};
 use zkm_stark::septic_digest::SepticDigest;
 
 use super::{ProofOpts, ProverType};

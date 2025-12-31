@@ -1,5 +1,5 @@
-use std::{borrow::Borrow, fs::metadata, path::PathBuf};
 use p3_koala_bear::KoalaBear;
+use std::{borrow::Borrow, fs::metadata, path::PathBuf};
 use zkm_core_executor::ZKMContext;
 use zkm_core_machine::io::ZKMStdin;
 use zkm_recursion_circuit::{
@@ -85,7 +85,7 @@ pub fn try_build_dvsnark_bn254_artifacts_dev(
     }
 
     println!("[zkm] building dv-snark bn254 artifacts in development mode");
-    build_dvsnark_bn254_artifacts(template_vk, template_proof, &build_dir, &store_dir);
+    build_dvsnark_bn254_artifacts(template_vk, template_proof, &build_dir, store_dir);
     build_dir
 }
 

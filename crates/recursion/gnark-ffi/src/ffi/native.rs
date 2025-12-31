@@ -18,8 +18,6 @@ mod bind {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 use bind::*;
-use crate::ffi::native::BuildFunction::Plonk;
-use crate::ffi::native::ProofResult::Groth16;
 
 enum ProofSystem {
     Plonk,
@@ -42,13 +40,6 @@ impl ProofSystem {
         }
     }
 
-    fn build_dvsnark_fn(&self) -> unsafe extern "C" fn(*mut c_char, *mut c_char) {
-        match self {
-            ProofSystem::DvSnark => bind::BuildDvSnarkBn254,
-            _ => unreachable!()
-        }
-    }
-
     fn prove_fn(&self) -> ProveFunction {
         match self {
             ProofSystem::Plonk => ProveFunction::Plonk(bind::ProvePlonkBn254),
@@ -64,7 +55,7 @@ impl ProofSystem {
         match self {
             ProofSystem::Plonk => bind::VerifyPlonkBn254,
             ProofSystem::Groth16 => bind::VerifyGroth16Bn254,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -72,7 +63,7 @@ impl ProofSystem {
         match self {
             ProofSystem::Plonk => bind::TestPlonkBn254,
             ProofSystem::Groth16 => bind::TestGroth16Bn254,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -80,7 +71,9 @@ impl ProofSystem {
 enum ProveFunction {
     Plonk(unsafe extern "C" fn(*mut c_char, *mut c_char) -> *mut C_PlonkBn254Proof),
     Groth16(unsafe extern "C" fn(*mut c_char, *mut c_char) -> *mut C_Groth16Bn254Proof),
-    DvSnark(unsafe extern "C" fn(*mut c_char, *mut c_char, *mut c_char) -> *mut C_DvSnarkBn254Proof),
+    DvSnark(
+        unsafe extern "C" fn(*mut c_char, *mut c_char, *mut c_char) -> *mut C_DvSnarkBn254Proof,
+    ),
 }
 
 enum BuildFunction {
@@ -101,10 +94,7 @@ fn build(system: ProofSystem, data_dir: &str, store_dir: &str) {
             }
             BuildFunction::DvSnark(func) => {
                 let store_dir = CString::new(store_dir).expect("CString::new failed");
-                func(
-                    data_dir.as_ptr() as *mut c_char,
-                    store_dir.as_ptr() as *mut c_char,
-                );
+                func(data_dir.as_ptr() as *mut c_char, store_dir.as_ptr() as *mut c_char);
             }
         }
     }
@@ -239,7 +229,11 @@ pub fn build_dvsnark_bn254(data_dir: &str, store_dir: &str) {
     build(ProofSystem::DvSnark, data_dir, store_dir)
 }
 
-pub fn prove_dvsnark_bn254(data_dir: &str, witness_path: &str, store_dir: &str) -> DvSnarkBn254Proof {
+pub fn prove_dvsnark_bn254(
+    data_dir: &str,
+    witness_path: &str,
+    store_dir: &str,
+) -> DvSnarkBn254Proof {
     match prove(ProofSystem::DvSnark, data_dir, witness_path, store_dir) {
         ProofResult::DvSnark(proof) => DvSnarkBn254Proof {},
         _ => unreachable!(),

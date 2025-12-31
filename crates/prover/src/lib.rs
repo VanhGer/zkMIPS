@@ -73,8 +73,10 @@ use zkm_recursion_core::{
     stark::KoalaBearPoseidon2Outer,
     RecursionProgram, Runtime as RecursionRuntime,
 };
-pub use zkm_recursion_gnark_ffi::proof::{Groth16Bn254Proof, PlonkBn254Proof, DvSnarkBn254Proof};
-use zkm_recursion_gnark_ffi::{groth16_bn254::Groth16Bn254Prover, plonk_bn254::PlonkBn254Prover, DvSnarkBn254Prover};
+pub use zkm_recursion_gnark_ffi::proof::{DvSnarkBn254Proof, Groth16Bn254Proof, PlonkBn254Proof};
+use zkm_recursion_gnark_ffi::{
+    groth16_bn254::Groth16Bn254Prover, plonk_bn254::PlonkBn254Prover, DvSnarkBn254Prover,
+};
 use zkm_stark::{
     air::PublicValues, koala_bear_poseidon2::KoalaBearPoseidon2, Challenge, MachineProver,
     ShardProof, StarkGenericConfig, StarkVerifyingKey, Val, Word, ZKMCoreOpts, ZKMProverOpts,
@@ -1148,8 +1150,7 @@ impl<C: ZKMProverComponents> ZKMProver<C> {
         witness.write_vkey_hash(vkey_hash);
 
         let prover = DvSnarkBn254Prover::new();
-        let proof = prover.prove(witness, build_dir.to_path_buf(), store_dir.to_path_buf());
-        proof
+        prover.prove(witness, build_dir.to_path_buf(), store_dir.to_path_buf())
     }
 
     /// Accumulate deferred proofs into a single digest.

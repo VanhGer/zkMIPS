@@ -1,17 +1,10 @@
-use std::{
-    fs::File,
-    io::{Read, Write},
-    path::{Path, PathBuf},
-};
-
+use crate::ffi::{build_dvsnark_bn254, prove_dvsnark_bn254};
 use crate::{witness::GnarkWitness, DvSnarkBn254Proof};
-
-use sha2::{Digest, Sha256};
+use std::{fs::File, io::Write, path::PathBuf};
 use zkm_recursion_compiler::{
     constraints::Constraint,
     ir::{Config, Witness},
 };
-use crate::ffi::{build_dvsnark_bn254, prove_dvsnark_bn254};
 
 /// A prover that can generate proofs with Dvsnark protocol
 #[derive(Debug, Clone)]
@@ -62,7 +55,7 @@ impl DvSnarkBn254Prover {
         let serialized = serde_json::to_string(&gnark_witness).unwrap();
         witness_file.write_all(serialized.as_bytes()).unwrap();
 
-        let mut proof = prove_dvsnark_bn254(
+        let proof = prove_dvsnark_bn254(
             build_dir.to_str().unwrap(),
             witness_file.path().to_str().unwrap(),
             store_dir.to_str().unwrap(),
