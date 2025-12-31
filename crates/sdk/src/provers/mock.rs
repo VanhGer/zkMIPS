@@ -149,9 +149,7 @@ impl Prover<DefaultProverComponents> for MockProver {
                 let (public_values, _) = self.prover.execute(&pk.elf, &stdin, context)?;
                 Ok((
                     ZKMProofWithPublicValues {
-                        proof: ZKMProof::DvSnark(DvSnarkBn254Proof {
-                            dvsnark_vkey_hash: [0; 32],
-                        }),
+                        proof: ZKMProof::DvSnark(DvSnarkBn254Proof {}),
                         public_values,
                         zkm_version: self.version().to_string(),
                     },

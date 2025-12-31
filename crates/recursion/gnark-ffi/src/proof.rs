@@ -28,6 +28,4 @@ pub struct Groth16Bn254Proof {
 
 /// An empty proof structure for DV-SNARK
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct DvSnarkBn254Proof {
-    pub dvsnark_vkey_hash: [u8; 32],
-}
+pub struct DvSnarkBn254Proof {}

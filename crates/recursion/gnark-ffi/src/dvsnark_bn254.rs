@@ -24,12 +24,6 @@ impl DvSnarkBn254Prover {
         Self
     }
 
-    pub fn get_vkey_hash(build_dir: &Path) -> [u8; 32] {
-        let vkey_path = build_dir.join("groth16_vk.bin");
-        let vk_bin_bytes = std::fs::read(vkey_path).unwrap();
-        Sha256::digest(vk_bin_bytes).into()
-    }
-
     /// Builds the DvSnark circuit locally.
     pub fn build<C: Config>(
         constraints: Vec<Constraint>,
@@ -73,7 +67,6 @@ impl DvSnarkBn254Prover {
             witness_file.path().to_str().unwrap(),
             store_dir.to_str().unwrap(),
         );
-        proof.dvsnark_vkey_hash = Self::get_vkey_hash(&build_dir);
         proof
     }
 }

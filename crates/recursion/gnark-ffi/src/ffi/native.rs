@@ -241,7 +241,7 @@ pub fn build_dvsnark_bn254(data_dir: &str, store_dir: &str) {
 
 pub fn prove_dvsnark_bn254(data_dir: &str, witness_path: &str, store_dir: &str) -> DvSnarkBn254Proof {
     match prove(ProofSystem::DvSnark, data_dir, witness_path, store_dir) {
-        ProofResult::DvSnark(proof) => DvSnarkBn254Proof {dvsnark_vkey_hash: [0; 32],},
+        ProofResult::DvSnark(proof) => DvSnarkBn254Proof {},
         _ => unreachable!(),
     }
 }
