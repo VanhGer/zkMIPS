@@ -117,12 +117,6 @@ impl<'a> ZKMContextBuilder<'a> {
         self.max_cycles = Some(max_cycles);
         self
     }
-
-    /// Set the skip deferred proof verification flag.
-    pub fn set_skip_deferred_proof_verification(&mut self, skip: bool) -> &mut Self {
-        self.skip_deferred_proof_verification = skip;
-        self
-    }
 }
 
 #[cfg(test)]
