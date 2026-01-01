@@ -21,9 +21,6 @@ pub struct ZKMContext<'a> {
 
     /// The maximum number of cpu cycles to use for execution.
     pub max_cycles: Option<u64>,
-
-    /// Skip deferred proof verification.
-    pub skip_deferred_proof_verification: bool,
 }
 
 /// A builder for [`ZKMContext`].
@@ -33,7 +30,6 @@ pub struct ZKMContextBuilder<'a> {
     hook_registry_entries: Vec<(u32, BoxedHook<'a>)>,
     subproof_verifier: Option<&'a dyn SubproofVerifier>,
     max_cycles: Option<u64>,
-    skip_deferred_proof_verification: bool,
 }
 
 impl<'a> ZKMContext<'a> {
@@ -72,12 +68,10 @@ impl<'a> ZKMContextBuilder<'a> {
             });
         let subproof_verifier = take(&mut self.subproof_verifier);
         let cycle_limit = take(&mut self.max_cycles);
-        let skip_deferred_proof_verification = take(&mut self.skip_deferred_proof_verification);
         ZKMContext {
             hook_registry,
             subproof_verifier,
             max_cycles: cycle_limit,
-            skip_deferred_proof_verification,
         }
     }
 
