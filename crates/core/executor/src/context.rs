@@ -68,11 +68,7 @@ impl<'a> ZKMContextBuilder<'a> {
             });
         let subproof_verifier = take(&mut self.subproof_verifier);
         let cycle_limit = take(&mut self.max_cycles);
-        ZKMContext {
-            hook_registry,
-            subproof_verifier,
-            max_cycles: cycle_limit,
-        }
+        ZKMContext { hook_registry, subproof_verifier, max_cycles: cycle_limit }
     }
 
     /// Add a runtime [Hook](super::Hook) into the context.
